@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# Stub of gh for tests: appends the call to $CALLS; fails when $GH_FAILS is set.
+echo "gh $*" >>"$CALLS"
+[[ -z ${GH_FAILS-} ]]
