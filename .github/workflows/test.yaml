@@ -52,6 +52,20 @@ jobs:
           persist-credentials: false
       - run: tests/run.sh
 
+  pinned:
+    name: Pinned release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Checks the pinned tarballs against the signed store paths of
+      # cache.nixos.org; fails if versions.sh would change.
+      - run: tests/ci/pinned.sh
+
   install:
     name: Install on ${{ matrix.runner }}
     strategy:
@@ -79,8 +93,10 @@ jobs:
           EXTRA_SUBSTITUTER: https://flakeyard.cachix.org
         run: tests/ci/installation.sh
 
-      - name: Record nix.conf
-        run: sha256sum /etc/nix/nix.conf >"$RUNNER_TEMP/nix.conf.sha256"
+      - name: Record the configuration
+        run: >-
+          sha256sum /etc/nix/nix.conf ~/.config/nix/nix.conf
+          >"$RUNNER_TEMP/nix.conf.sha256"
 
       - id: again
         name: Run the action again
@@ -94,9 +110,24 @@ jobs:
           [[ $OUTCOME == failure ]] || { echo "::error::The second run did not fail."; exit 1; }
           sha256sum --check "$RUNNER_TEMP/nix.conf.sha256"
 
+  without-token:
+    name: Install without a token
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: $/
+        with:
+          github-token: ""
+      - run: tests/ci/without-token.sh
+
   required:
     name: required
-    needs: [pending, unit, install]
+    needs: [pending, unit, pinned, install, without-token]
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 5
