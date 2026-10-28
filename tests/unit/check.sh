@@ -195,3 +195,10 @@ for leftover in etc/xdg/nix etc/systemd/system/nix-daemon.service etc/bashrc.bac
   expect message "found: /$leftover"
   finish
 done
+
+# --- unsupported-os.sh ------------------------------------------------------
+
+setup
+run "unsupported-os: names the runner" fail unsupported-os.sh RUNNER_OS=Windows
+expect message "::error::Unsupported runner Windows: use a GitHub-hosted Linux runner"
+finish
