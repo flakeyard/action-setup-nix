@@ -9,6 +9,8 @@ source "$(dirname -- "${BASH_SOURCE[0]}")/lib.sh"
 source "$root/tests/unit/check.sh"
 # shellcheck source-path=SCRIPTDIR source=unit/install.sh
 source "$root/tests/unit/install.sh"
+# shellcheck source-path=SCRIPTDIR source=unit/verify.sh
+source "$root/tests/unit/verify.sh"
 
 echo "passed: $passed, failed: $failed"
 ((failed == 0))
