@@ -1,8 +1,8 @@
 # action-setup-nix
 
 A GitHub Action that installs Nix on GitHub-hosted Linux runners: a pinned
-release of [Nix](https://github.com/NixOS/nix), verified by its SHA-256, in
-multi-user mode with the sandbox on and only the binary caches you name.
+release of [Nix][nix], verified by its SHA-256, in multi-user mode with the
+sandbox on and only the binary caches you name.
 
 ## Usage
 
@@ -53,10 +53,12 @@ Reference the action by full commit SHA, as above. To use a binary cache besides
 
 - **Nix.** Each release of the action installs one version of Nix from the
   official release tarball of NixOS/nix for the runner's system, verified
-  against the SHA-256 recorded in the action; nothing at run time can change the
-  version or the source. This release installs Nix 2.35.4.
-- **Installation.** The official installer runs in daemon mode with a reduced
-  environment, so `NIX_*` and other variables of the job do not change it. Later
+  against the SHA-256 recorded in the action. This release installs Nix 2.35.4.
+- **Installation.** The steps of the action run the runner's own `bash` and
+  tools, without `BASH_ENV`, and the official installer runs in daemon mode with
+  a reduced environment, so `PATH`, `NIX_*` and other variables of the job do
+  not change the version, the source or the installation. Steps that run before
+  the action can still change anything on the runner, through `sudo` too. Later
   steps can rely on:
   - `nix` on `PATH`, from `/nix/var/nix/profiles/default/bin`;
   - a running `nix-daemon`, through systemd;
@@ -121,24 +123,32 @@ build users have no access to it, so tests that start virtual machines fail.
 The Nix version is part of the public API. A new patch version of Nix is a patch
 release of the action and a new minor version a minor release; a Nix release
 whose release notes list incompatible changes is a major release. See
-[VERSIONING](https://github.com/flakeyard/.github/blob/main/VERSIONING.md).
+[VERSIONING][versioning].
 
 ## Maintenance
 
-To update Nix, run `scripts/update-nix.sh VERSION`. It downloads the tarball of
-every system, compares it with the published hash and checks every store path in
-it against the signed narinfo in `cache.nixos.org`, then writes the hashes into
-`versions.sh`. Commit the change as `fix(deps):` for a new patch version and as
-`feat(deps):` for a new minor version.
+To update Nix, run `scripts/update-nix.sh VERSION`; it needs `curl`, `openssl`,
+`python3`, `tar` and `xz`, not Nix. For the tarball of every system, it:
+
+- compares the tarball with its published hash;
+- checks that every store path in it is in `cache.nixos.org`, signed by
+  `cache.nixos.org-1`, with the NAR hash, size and references of its contents in
+  the tarball, and that the tarball contains no other store paths;
+- shows how the installer scripts, which no signature covers, changed since the
+  pinned release, for review.
+
+Only when every system passed, it writes `versions.sh` and the version in this
+README. Commit the change as `fix(deps):` for a new patch version and as
+`feat(deps):` for a new minor version. The CI runs the same checks for the
+pinned version every week.
 
 Tests: `tests/run.sh` runs the unit tests of the scripts; `tests/ci/` holds the
 checks that the CI runs on real runners after the action.
 
 ## Bootstrap
 
-This repository is bootstrapped under
-[FY-0022](https://github.com/flakeyard/decisions/blob/main/docs/adr/records/0022-bootstrap.md).
-Until their providers are released:
+This repository is bootstrapped under [FY-0022][fy-0022]. Until their providers
+are released:
 
 - actionlint, zizmor, shellcheck, shfmt, Prettier and the other checks of the
   atoms run locally before every pull request (provider: `workflow-check` and
@@ -150,3 +160,7 @@ Until their providers are released:
 ## License
 
 [MIT](LICENSE).
+
+[nix]: https://github.com/NixOS/nix
+[versioning]: https://github.com/flakeyard/.github/blob/main/VERSIONING.md
+[fy-0022]: https://github.com/flakeyard/decisions/blob/main/docs/adr/records/0022-bootstrap.md

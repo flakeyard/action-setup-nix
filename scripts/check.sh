@@ -41,8 +41,15 @@ fi
 found=()
 [[ -e $ROOT/nix ]] && found+=("/nix")
 [[ -e $ROOT/etc/nix ]] && found+=("/etc/nix")
+[[ -e $ROOT/etc/xdg/nix ]] && found+=("/etc/xdg/nix")
+for unit in "$ROOT"/etc/systemd/system/nix-daemon.*; do
+  [[ -e $unit ]] && found+=("${unit#"$ROOT"}")
+done
+for backup in "$ROOT"/etc/*.backup-before-nix; do
+  [[ -e $backup ]] && found+=("${backup#"$ROOT"}")
+done
 [[ -r $ROOT/etc/group ]] && grep -q '^nixbld:' "$ROOT/etc/group" && found+=("group nixbld")
-command -v nix >/dev/null && found+=("nix on PATH")
+PATH=$JOB_PATH command -v nix >/dev/null && found+=("nix on PATH")
 [[ -e $(user_conf) ]] && found+=("$(user_conf)")
 if ((${#found[@]})); then
   error "Nix was installed on this runner before (found: ${found[*]}); this action installs Nix only on a clean runner, once per job."
@@ -56,12 +63,12 @@ mapfile -t substituters < <(words "${SUBSTITUTERS-}")
 mapfile -t keys < <(words "${KEYS-}")
 for url in "${substituters[@]}"; do
   if ! [[ $url =~ ^https://[A-Za-z0-9.-]+(:[0-9]{1,5})?(/[A-Za-z0-9._~/-]*)?$ ]]; then
-    error "Invalid extra substituter '$url': expected an https URL without user information, query or fragment."
+    error "Invalid extra substituter '$(shown "$url")': expected an https URL without user information, query or fragment."
   fi
 done
 for key in "${keys[@]}"; do
   if ! [[ $key =~ ^[A-Za-z0-9._-]+:[A-Za-z0-9+/]{43}=$ ]]; then
-    error "Invalid extra trusted public key '$key': expected <name>:<base64 Ed25519 key>."
+    error "Invalid extra trusted public key '$(shown "$key")': expected <name>:<base64 Ed25519 key>."
   fi
 done
 if ((${#keys[@]} && ! ${#substituters[@]})); then

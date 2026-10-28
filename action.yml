@@ -22,35 +22,37 @@ outputs:
   nix-version:
     description: Installed Nix version, such as 2.35.4.
     value: ${{ steps.verify.outputs.nix-version }}
+# Steps use the runner's bash without BASH_ENV, so that earlier steps of the
+# job cannot inject code through the environment.
 runs:
   using: composite
   steps:
     - name: Check the runner and inputs
-      shell: bash
+      shell: /usr/bin/env -u BASH_ENV -u ENV /usr/bin/bash --noprofile --norc -e -o pipefail {0}
       env:
         SUBSTITUTERS: ${{ inputs.extra-substituters }}
         KEYS: ${{ inputs.extra-trusted-public-keys }}
         TOKEN: ${{ inputs.github-token }}
-      run: '"$GITHUB_ACTION_PATH/scripts/check.sh"'
+      run: /usr/bin/bash "$GITHUB_ACTION_PATH/scripts/check.sh"
 
     - name: Install Nix
-      shell: bash
+      shell: /usr/bin/env -u BASH_ENV -u ENV /usr/bin/bash --noprofile --norc -e -o pipefail {0}
       env:
         SUBSTITUTERS: ${{ inputs.extra-substituters }}
         KEYS: ${{ inputs.extra-trusted-public-keys }}
-      run: '"$GITHUB_ACTION_PATH/scripts/install.sh"'
+      run: /usr/bin/bash "$GITHUB_ACTION_PATH/scripts/install.sh"
 
     - name: Configure the GitHub token
       if: inputs.github-token != ''
-      shell: bash
+      shell: /usr/bin/env -u BASH_ENV -u ENV /usr/bin/bash --noprofile --norc -e -o pipefail {0}
       env:
         TOKEN: ${{ inputs.github-token }}
-      run: '"$GITHUB_ACTION_PATH/scripts/configure-token.sh"'
+      run: /usr/bin/bash "$GITHUB_ACTION_PATH/scripts/configure-token.sh"
 
     - id: verify
       name: Check the installation
-      shell: bash
+      shell: /usr/bin/env -u BASH_ENV -u ENV /usr/bin/bash --noprofile --norc -e -o pipefail {0}
       env:
         SUBSTITUTERS: ${{ inputs.extra-substituters }}
         KEYS: ${{ inputs.extra-trusted-public-keys }}
-      run: '"$GITHUB_ACTION_PATH/scripts/verify.sh"'
+      run: /usr/bin/bash "$GITHUB_ACTION_PATH/scripts/verify.sh"

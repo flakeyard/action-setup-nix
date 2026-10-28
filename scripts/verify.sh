@@ -8,23 +8,26 @@ here=$(dirname -- "${BASH_SOURCE[0]}")
 # shellcheck source-path=SCRIPTDIR source=lib.sh
 source "$here/lib.sh"
 
-# Settings from the job environment would change what nix reports.
+# Only the runner user's own settings, not those of the job environment, such
+# as NIX_CONFIG.
 nix() {
-  env -u NIX_CONFIG -u NIX_USER_CONF_FILES -u NIX_CONF_DIR -u NIX_REMOTE \
-    "$(nix_bin)" "$@"
+  env -i PATH="$SYSTEM_PATH" HOME="$HOME" USER="$(id -un)" "$(nix_bin)" "$@"
 }
 fail() {
   printf '::error::%s\n' "$1"
   exit 1
 }
 
-version=$(nix --version)
+conf=$ROOT/etc/nix/nix.conf
+[[ -x $(nix_bin) ]] || fail "$(nix_bin) was not installed."
+[[ -r $conf ]] || fail "$conf was not installed."
+
+version=$(nix --version) || fail "nix --version failed."
 [[ $version == "nix (Nix) $NIX_VERSION" ]] ||
   fail "Installed '$version', expected Nix $NIX_VERSION."
 
 nix store info >/dev/null || fail "The Nix daemon does not answer."
 
-conf=$ROOT/etc/nix/nix.conf
 expected=$("$here/nix-conf.sh")
 actual=$(<"$conf")
 [[ $actual == "$expected"$'\n'* ]] ||

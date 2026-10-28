@@ -37,9 +37,13 @@ tar --extract --xz --file "$work/nix.tar.xz" --directory "$work"
 # The installer reads NIX_* and other variables, which earlier steps can set
 # for the whole job; it gets only what it needs.
 user=$(id -un)
-env -i PATH=/usr/sbin:/usr/bin:/sbin:/bin HOME="$HOME" USER="$user" \
+env -i PATH="$SYSTEM_PATH" HOME="$HOME" USER="$user" \
   LC_ALL=C TMPDIR="$work" \
   "$work/$name/install" --daemon --yes --no-channel-add \
-  --nix-extra-conf-file "$work/nix.conf"
+  --nix-extra-conf-file "$work/nix.conf" ||
+  {
+    echo "::error::The Nix installer failed; see its output above."
+    exit 1
+  }
 
 dirname -- "$(nix_bin)" >>"$GITHUB_PATH"
