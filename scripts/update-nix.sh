@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 # Usage: scripts/update-nix.sh VERSION
 #
-# For maintainers: pins the Nix release VERSION in versions.sh. Downloads the
-# tarball of every system, checks it against the published hash and against
-# the signed store paths in cache.nixos.org, and writes the hashes.
+# Pins the Nix release VERSION in versions.sh. Downloads the tarball of every
+# system, checks it against the published hash and with check-tarball.sh, shows
+# how its installer scripts differ from the pinned release, and writes
+# versions.sh only when every system passed. Run with the pinned version, it
+# checks the pin and changes nothing; the CI does that.
 set -euo pipefail
 export LC_ALL=C
 
@@ -20,24 +22,58 @@ source "$versions"
 work=$(mktemp -d)
 trap 'rm -rf -- "$work"' EXIT
 
-for system in x86_64-linux aarch64-linux; do
-  url=$NIX_BASE_URL/nix-$version/nix-$version-$system.tar.xz
-  echo "Downloading $url"
+# fetch VERSION SYSTEM: downloads a release tarball to $work and prints its path.
+fetch() {
+  local url=$NIX_BASE_URL/nix-$1/nix-$1-$2.tar.xz file=$work/nix-$1-$2.tar.xz
+  echo "Downloading $url" >&2
   curl --proto '=https' --fail --silent --show-error --location --retry 3 \
-    --output "$work/$system.tar.xz" "$url"
+    --output "$file" "$url"
+  echo "$file"
+}
+
+script=$(<"$versions")
+for system in x86_64-linux aarch64-linux; do
+  tarball=$(fetch "$version" "$system")
   published=$(curl --proto '=https' --fail --silent --show-error --location \
-    --retry 3 "$url.sha256")
-  actual=$(sha256sum "$work/$system.tar.xz")
+    --retry 3 "$NIX_BASE_URL/nix-$version/nix-$version-$system.tar.xz.sha256")
+  actual=$(sha256sum "$tarball")
   actual=${actual%% *}
   [[ $actual == "$published" ]] || {
-    echo "error: $url has SHA-256 $actual, published $published" >&2
+    echo "error: the tarball for $system has SHA-256 $actual, published $published" >&2
     exit 1
   }
-  "$here/check-tarball.sh" "$work/$system.tar.xz"
-  sed -i -e "s/^NIX_SHA256_${system//-/_}=.*/NIX_SHA256_${system//-/_}=$actual/" "$versions"
-done
-sed -i -e "s/^NIX_VERSION=.*/NIX_VERSION=$version/" "$versions"
+  "$here/check-tarball.sh" "$tarball"
 
-echo "Pinned Nix $version. Commit it as fix(deps) for a new patch version and"
-echo "as feat(deps) for a new minor version, or as a breaking change if the"
-echo "release notes of Nix list incompatible changes."
+  # The installer scripts are not signed: show what changed for review.
+  if [[ $version != "$NIX_VERSION" ]]; then
+    pinned=$(fetch "$NIX_VERSION" "$system")
+    mkdir -p "$work/old" "$work/new"
+    tar --extract --xz --file "$pinned" --directory "$work/old" --exclude '*/store'
+    tar --extract --xz --file "$tarball" --directory "$work/new" --exclude '*/store'
+    echo "Changes of the installer scripts for $system since $NIX_VERSION:"
+    diff -ru --exclude .reginfo "$work/old/nix-$NIX_VERSION-$system" \
+      "$work/new/nix-$version-$system" || true
+    rm -rf -- "$work/old" "$work/new"
+  fi
+
+  var=NIX_SHA256_${system//-/_}
+  # shellcheck disable=SC2001 # replaces whole lines
+  script=$(sed -e "s/^$var=.*/$var=$actual/" <<<"$script")
+done
+# shellcheck disable=SC2001 # replaces whole lines
+script=$(sed -e "s/^NIX_VERSION=.*/NIX_VERSION=$version/" <<<"$script")
+
+printf '%s\n' "$script" >"$work/versions.sh"
+if cmp -s "$work/versions.sh" "$versions"; then
+  echo "versions.sh already pins Nix $version with these hashes."
+  exit 0
+fi
+mv -- "$work/versions.sh" "$versions"
+readme=$here/../README.md
+if [[ -f $readme ]]; then
+  sed -i -e "s/This release installs Nix [0-9.]*[0-9]\./This release installs Nix $version./" "$readme"
+fi
+echo "Pinned Nix $version. Review the changes of the installer scripts above,"
+echo "then commit as fix(deps) for a new patch version and as feat(deps) for a"
+echo "new minor version, or as a breaking change if the release notes of Nix"
+echo "list incompatible changes."
