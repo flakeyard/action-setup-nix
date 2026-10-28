@@ -16,7 +16,7 @@ source "$root/versions.sh"
 sysbin=$(mktemp -d)
 trap 'rm -rf -- "$sysbin"' EXIT
 for tool in bash env sed grep cat cp mv rm mkdir mktemp dirname id stat chmod \
-  sha256sum tar xz cut ls touch python3 openssl base64 sort cmp diff; do
+  sha256sum tar xz cut ls touch python3 openssl base64 sort cmp diff jq paste; do
   ln -s "$(command -v "$tool")" "$sysbin/$tool"
 done
 

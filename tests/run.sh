@@ -15,6 +15,8 @@ source "$root/tests/unit/verify.sh"
 source "$root/tests/unit/check-tarball.sh"
 # shellcheck source-path=SCRIPTDIR source=unit/update-nix.sh
 source "$root/tests/unit/update-nix.sh"
+# shellcheck source-path=SCRIPTDIR source=unit/ci-scripts.sh
+source "$root/tests/unit/ci-scripts.sh"
 
 echo "passed: $passed, failed: $failed"
 ((failed == 0))
