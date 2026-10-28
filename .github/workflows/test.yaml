@@ -127,9 +127,24 @@ jobs:
           github-token: ""
       - run: tests/ci/without-token.sh
 
+  invalid-token:
+    name: Install with an invalid token
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: $/
+        with:
+          github-token: ghs_invalid0000000000000000000000000000
+      - run: tests/ci/invalid-token.sh
+
   required:
     name: required
-    needs: [pending, unit, pinned, install, without-token]
+    needs: [pending, unit, pinned, install, without-token, invalid-token]
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 5

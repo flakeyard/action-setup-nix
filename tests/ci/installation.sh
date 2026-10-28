@@ -42,6 +42,27 @@ echo "::endgroup::"
 [[ $output == *"ignoring untrusted substituter 'https://untrusted.invalid'"* ]] ||
   fail "A substituter given by the runner user was not reported as ignored."
 
+echo "::group::Network check outside the sandbox"
+if sh tests/fixture/no-network.sh; then
+  fail "The network check of the fixture passes outside the sandbox, so it proves nothing."
+fi
+echo "::endgroup::"
+
+# Nix 2.35.3 from its fallback-paths.nix: in cache.nixos.org, but not installed.
+case $(uname -m) in
+  x86_64) path=/nix/store/h0klnxidg8az3lpvc2ksan1kk05jkzbk-nix-2.35.3 ;;
+  aarch64) path=/nix/store/km1j517ydr6m16qcg0kvm7xc086jhifj-nix-2.35.3 ;;
+esac
+echo "::group::Substitution of $path"
+nix-store --realise "$path" || fail "$path was not substituted from cache.nixos.org."
+nix path-info --sigs "$path"
+echo "::endgroup::"
+
+echo "::group::Fetching from GitHub with the token"
+nix flake metadata --no-write-lock-file github:NixOS/nix/2.35.4 ||
+  fail "Fetching a flake from GitHub failed."
+echo "::endgroup::"
+
 echo "::group::Sandboxed check"
 printf '%s-%s' "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" >tests/fixture/nonce
 output=$(nix flake check --no-write-lock-file --print-build-logs "path:$PWD/tests/fixture" 2>&1) ||

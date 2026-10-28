@@ -20,23 +20,8 @@
         derivation {
           name = "sandbox";
           inherit system nonce;
-          # The sandbox shell is a minimal busybox: only shell builtins.
           builder = "/bin/sh";
-          args = [
-            "-c"
-            ''
-              while read -r name rest; do
-                case $name in
-                  Inter-\| | face | lo:*) ;;
-                  *)
-                    echo "network interface $name is visible in the sandbox"
-                    exit 1
-                    ;;
-                esac
-              done </proc/net/dev
-              echo "$nonce" >"$out"
-            ''
-          ];
+          args = [ ./no-network.sh ];
         };
     in
     {
