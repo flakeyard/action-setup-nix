@@ -1,0 +1,122 @@
+# CI of this repository: unit tests of the scripts, and the action itself on
+# every supported runner. Weekly, because runner image updates can break the
+# action without a release.
+name: test
+
+on:
+  pull_request:
+  push:
+    branches: [main, "release/v*"]
+  schedule:
+    - cron: "23 4 * * 1"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  pending:
+    name: Report pending
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      statuses: write # commit status of a dispatched run
+    steps:
+      - shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          STATE: pending
+          CONTEXT: required
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        # The script is not checked out yet; this is its one call.
+        run: >-
+          gh api --silent -X POST "repos/$REPO/statuses/$SHA"
+          -f state="$STATE" -f context="$CONTEXT" -f target_url="$RUN_URL"
+          -f description="GitHub Actions run"
+
+  unit:
+    name: Unit tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: tests/run.sh
+
+  install:
+    name: Install on ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - id: setup
+        uses: $/
+        with:
+          extra-substituters: https://flakeyard.cachix.org
+          extra-trusted-public-keys: flakeyard.cachix.org-1:WxHxE1HWLr67hdqhOBRrfWAM408yL6SM3g9++ZaaSzg=
+
+      - name: Check the installation
+        env:
+          NIX_VERSION: ${{ steps.setup.outputs.nix-version }}
+          EXTRA_SUBSTITUTER: https://flakeyard.cachix.org
+        run: tests/ci/installation.sh
+
+      - name: Record nix.conf
+        run: sha256sum /etc/nix/nix.conf >"$RUNNER_TEMP/nix.conf.sha256"
+
+      - id: again
+        name: Run the action again
+        continue-on-error: true
+        uses: $/
+
+      - name: Check that the second run failed and changed nothing
+        env:
+          OUTCOME: ${{ steps.again.outcome }}
+        run: |
+          [[ $OUTCOME == failure ]] || { echo "::error::The second run did not fail."; exit 1; }
+          sha256sum --check "$RUNNER_TEMP/nix.conf.sha256"
+
+  required:
+    name: required
+    needs: [pending, unit, install]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      statuses: write # commit status of a dispatched run
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: result
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: .github/scripts/required.sh
+      - if: always() && github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+          STATE: ${{ steps.result.outcome == 'success' && 'success' || 'failure' }}
+          CONTEXT: required
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: .github/scripts/commit-status.sh
