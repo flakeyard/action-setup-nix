@@ -27,6 +27,12 @@ outputs:
 runs:
   using: composite
   steps:
+    # The other steps need the runner's /usr/bin/bash, which only Linux has.
+    - name: Check the operating system
+      if: runner.os != 'Linux'
+      shell: bash
+      run: bash "$GITHUB_ACTION_PATH/scripts/unsupported-os.sh"
+
     - name: Check the runner and inputs
       shell: /usr/bin/env -u BASH_ENV -u ENV /usr/bin/bash --noprofile --norc -e -o pipefail {0}
       env:
