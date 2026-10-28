@@ -125,6 +125,26 @@ release of the action and a new minor version a minor release; a Nix release
 whose release notes list incompatible changes is a major release. See
 [VERSIONING][versioning].
 
+## Maintenance
+
+To update Nix, run `scripts/update-nix.sh VERSION`; it needs `curl`, `openssl`,
+`python3`, `tar` and `xz`, not Nix. For the tarball of every system, it:
+
+- compares the tarball with its published hash;
+- checks that every store path in it is in `cache.nixos.org`, signed by
+  `cache.nixos.org-1`, with the NAR hash, size and references of its contents in
+  the tarball, and that the tarball contains no other store paths;
+- shows how the installer scripts, which no signature covers, changed since the
+  pinned release, for review.
+
+Only when every system passed, it writes `versions.sh` and the version in this
+README. Commit the change as `fix(deps):` for a new patch version and as
+`feat(deps):` for a new minor version. The CI runs the same checks for the
+pinned version every week.
+
+Tests: `tests/run.sh` runs the unit tests of the scripts; `tests/ci/` holds the
+checks that the CI runs on real runners after the action.
+
 ## Bootstrap
 
 This repository is bootstrapped under [FY-0022][fy-0022]. Until their providers
