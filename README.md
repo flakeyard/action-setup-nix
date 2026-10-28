@@ -139,8 +139,9 @@ To update Nix, run `scripts/update-nix.sh VERSION`; it needs `curl`, `openssl`,
 
 Only when every system passed, it writes `versions.sh` and the version in this
 README. Commit the change as `fix(deps):` for a new patch version and as
-`feat(deps):` for a new minor version. The CI runs the same checks for the
-pinned version every week.
+`feat(deps):` for a new minor version. On every pull request and every week, the
+CI runs these checks for the pinned version and updates a copy from the previous
+Nix release, which must reproduce `versions.sh` and this README.
 
 Tests: `tests/run.sh` runs the unit tests of the scripts; `tests/ci/` holds the
 checks that the CI runs on real runners after the action.

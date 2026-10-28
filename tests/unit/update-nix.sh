@@ -23,12 +23,16 @@ for system in ${FAIL_SYSTEMS-}; do
   [[ $1 != *"$system"* ]] || exit 1
 done
 EOF2
+  cp "$root/README.md" "$action/README.md"
   cp "$action/versions.sh" "$work/versions.before"
 }
 
 update_setup
 run "update-nix: pins a new version" ok update-nix.sh -- 9.0.0
 expect message "Changes of the installer scripts for aarch64-linux since $NIX_VERSION:"
+expect message "/new/nix-9.0.0-aarch64-linux/install"
+[[ -z $current ]] || grep -qx "  against the SHA-256 recorded in the action. This release installs Nix 9.0.0." "$action/README.md" ||
+  report "the README does not name Nix 9.0.0: $(grep 'This release installs' "$action/README.md")"
 expect file "$action/versions.sh" "$(sed -e "s/^NIX_VERSION=.*/NIX_VERSION=9.0.0/" \
   -e "s/^NIX_SHA256_x86_64_linux=.*/NIX_SHA256_x86_64_linux=$(cat "$work/fixtures/nix-9.0.0-x86_64-linux.tar.xz.sha256")/" \
   -e "s/^NIX_SHA256_aarch64_linux=.*/NIX_SHA256_aarch64_linux=$(cat "$work/fixtures/nix-9.0.0-aarch64-linux.tar.xz.sha256")/" \
@@ -38,6 +42,7 @@ finish
 update_setup
 run "update-nix: a failing system changes nothing" fail update-nix.sh FAIL_SYSTEMS=aarch64-linux -- 9.0.0
 expect file "$action/versions.sh" "$(cat "$work/versions.before")"
+expect file "$action/README.md" "$(cat "$root/README.md")"
 finish
 
 update_setup

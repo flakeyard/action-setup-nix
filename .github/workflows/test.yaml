@@ -65,6 +65,8 @@ jobs:
       # Checks the pinned tarballs against the signed store paths of
       # cache.nixos.org; fails if versions.sh would change.
       - run: tests/ci/pinned.sh
+      # Updates a copy from the previous Nix release, as a maintainer would.
+      - run: tests/ci/update.sh
 
   install:
     name: Install on ${{ matrix.runner }}
