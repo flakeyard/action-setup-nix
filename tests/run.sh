@@ -11,6 +11,8 @@ source "$root/tests/unit/check.sh"
 source "$root/tests/unit/install.sh"
 # shellcheck source-path=SCRIPTDIR source=unit/verify.sh
 source "$root/tests/unit/verify.sh"
+# shellcheck source-path=SCRIPTDIR source=unit/check-tarball.sh
+source "$root/tests/unit/check-tarball.sh"
 
 echo "passed: $passed, failed: $failed"
 ((failed == 0))
