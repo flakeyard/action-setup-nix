@@ -1,0 +1,58 @@
+name: Set up Nix
+description: >-
+  Installs a pinned Nix in multi-user mode with the sandbox on, on
+  GitHub-hosted Linux runners.
+inputs:
+  extra-substituters:
+    description: >-
+      Binary caches to use besides cache.nixos.org: https URLs separated by
+      whitespace.
+    default: ""
+  extra-trusted-public-keys:
+    description: >-
+      Public keys of the extra caches, such as name-1:<base64>, separated by
+      whitespace.
+    default: ""
+  github-token:
+    description: >-
+      Token for fetching from GitHub, against API rate limits. Empty disables
+      it.
+    default: ${{ github.token }}
+outputs:
+  nix-version:
+    description: Installed Nix version, such as 2.35.4.
+    value: ${{ steps.verify.outputs.nix-version }}
+# Steps use the runner's bash without BASH_ENV, so that earlier steps of the
+# job cannot inject code through the environment.
+runs:
+  using: composite
+  steps:
+    - name: Check the runner and inputs
+      shell: /usr/bin/env -u BASH_ENV -u ENV /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+      env:
+        SUBSTITUTERS: ${{ inputs.extra-substituters }}
+        KEYS: ${{ inputs.extra-trusted-public-keys }}
+        TOKEN: ${{ inputs.github-token }}
+      run: /usr/bin/bash "$GITHUB_ACTION_PATH/scripts/check.sh"
+
+    - name: Install Nix
+      shell: /usr/bin/env -u BASH_ENV -u ENV /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+      env:
+        SUBSTITUTERS: ${{ inputs.extra-substituters }}
+        KEYS: ${{ inputs.extra-trusted-public-keys }}
+      run: /usr/bin/bash "$GITHUB_ACTION_PATH/scripts/install.sh"
+
+    - name: Configure the GitHub token
+      if: inputs.github-token != ''
+      shell: /usr/bin/env -u BASH_ENV -u ENV /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+      env:
+        TOKEN: ${{ inputs.github-token }}
+      run: /usr/bin/bash "$GITHUB_ACTION_PATH/scripts/configure-token.sh"
+
+    - id: verify
+      name: Check the installation
+      shell: /usr/bin/env -u BASH_ENV -u ENV /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+      env:
+        SUBSTITUTERS: ${{ inputs.extra-substituters }}
+        KEYS: ${{ inputs.extra-trusted-public-keys }}
+      run: /usr/bin/bash "$GITHUB_ACTION_PATH/scripts/verify.sh"
