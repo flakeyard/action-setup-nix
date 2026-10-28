@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+# Stub of curl for tests: answers a URL from $FIXTURES/<last path segment of
+# the URL>, into the file given by --output or on stdout. A missing file is
+# HTTP 404: with --fail, an error like curl's; with --write-out '%{http_code}',
+# the code. The URL is appended to $CALLS.
+set -euo pipefail
+output="" url="" fail=false write_out=""
+while (($#)); do
+  case $1 in
+    --output)
+      output=$2
+      shift 2
+      ;;
+    --write-out)
+      write_out=$2
+      shift 2
+      ;;
+    --proto | --retry | --connect-timeout | --max-time)
+      shift 2
+      ;;
+    --fail) fail=true && shift ;;
+    -*) shift ;;
+    *)
+      url=$1
+      shift
+      ;;
+  esac
+done
+echo "curl $url" >>"$CALLS"
+file=$FIXTURES/${url##*/}
+code=200
+if [[ ! -f $file ]]; then
+  code=404
+  if $fail || [[ -z $write_out ]]; then
+    echo "curl: (22) The requested URL returned error: 404" >&2
+    exit 22
+  fi
+  : >"${output:-/dev/null}"
+elif [[ -n $output ]]; then
+  cp -- "$file" "$output"
+else
+  cat -- "$file"
+fi
+[[ $write_out != '%{http_code}' ]] || printf '%s' "$code"

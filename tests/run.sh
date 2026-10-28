@@ -7,6 +7,8 @@ set -uo pipefail
 source "$(dirname -- "${BASH_SOURCE[0]}")/lib.sh"
 # shellcheck source-path=SCRIPTDIR source=unit/check.sh
 source "$root/tests/unit/check.sh"
+# shellcheck source-path=SCRIPTDIR source=unit/install.sh
+source "$root/tests/unit/install.sh"
 
 echo "passed: $passed, failed: $failed"
 ((failed == 0))
