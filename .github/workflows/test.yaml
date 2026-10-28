@@ -52,6 +52,20 @@ jobs:
           persist-credentials: false
       - run: tests/run.sh
 
+  pinned:
+    name: Pinned release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Checks the pinned tarballs against the signed store paths of
+      # cache.nixos.org; fails if versions.sh would change.
+      - run: tests/ci/pinned.sh
+
   install:
     name: Install on ${{ matrix.runner }}
     strategy:
@@ -113,7 +127,7 @@ jobs:
 
   required:
     name: required
-    needs: [pending, unit, install, without-token]
+    needs: [pending, unit, pinned, install, without-token]
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 5
