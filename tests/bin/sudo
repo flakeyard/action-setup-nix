@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+# Stub of sudo for tests: fails when $SUDO_FAILS is set, runs nothing.
+[[ -z ${SUDO_FAILS-} ]]
