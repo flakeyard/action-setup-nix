@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# A fake tool first on PATH in the hostile job: records the call and fails.
+echo "${0##*/} $*" >>"$RUNNER_TEMP/fake-tools-ran"
+exit 1

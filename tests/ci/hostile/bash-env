@@ -1,0 +1,5 @@
+# shellcheck shell=bash
+# BASH_ENV of the hostile job: records when a script of the action reads it.
+case $0 in
+  */scripts/*.sh) echo "$0" >>"$RUNNER_TEMP/bash-env-ran" ;;
+esac
