@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Unit tests of the scripts of the action; see tests/lib.sh.
+# Usage: tests/run.sh
+set -uo pipefail
+
+# shellcheck source-path=SCRIPTDIR source=lib.sh
+source "$(dirname -- "${BASH_SOURCE[0]}")/lib.sh"
+# shellcheck source-path=SCRIPTDIR source=unit/check.sh
+source "$root/tests/unit/check.sh"
+
+echo "passed: $passed, failed: $failed"
+((failed == 0))
