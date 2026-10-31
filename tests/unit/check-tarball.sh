@@ -122,3 +122,11 @@ pack
 run "check-tarball: no paths outside the store" fail check-tarball.sh -- "$work/release.tar.xz"
 expect message "invalid store path in .reginfo: /nix/store/../../x"
 finish
+
+release_setup
+reginfo_entry "$dep" >"$release/.reginfo"
+reginfo_entry "$nix" "${dep%.0}.?" >>"$release/.reginfo"
+pack
+run "check-tarball: references are not patterns" fail check-tarball.sh -- "$work/release.tar.xz"
+expect message "error: /nix/store/$nix in the tarball differs from https://example.test/cache"
+finish

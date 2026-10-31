@@ -85,7 +85,7 @@ while IFS= read -r path; do
   [[ $(narinfo StorePath "$info") == "$path" &&
   $(narinfo NarHash "$info") == "$nar_hash" &&
   $(narinfo NarSize "$info") == "$nar_size" &&
-  $(printf '%s\n' "${cache_refs[@]}" | sort) == $(printf '%s\n' "${refs[@]}" | sort) ]] ||
+  $(printf '%s\n' "${cache_refs[@]}" | sort) == "$(printf '%s\n' "${refs[@]}" | sort)" ]] ||
     fail "$path in the tarball differs from $cache"
 
   fingerprint="1;$path;$nar_hash;$nar_size;"
