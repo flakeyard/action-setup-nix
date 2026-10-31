@@ -110,8 +110,8 @@ Reference the action by full commit SHA, as above. To use a binary cache besides
   `ubuntu-24.04-arm`. Other runners fail the action before it changes anything:
   macOS, Windows, self-hosted runners and jobs in a container (`container:`),
   which have no systemd.
-- The CI of this action runs on Ubuntu 24.04. Other Ubuntu releases give a
-  warning, so that `ubuntu-latest` keeps working when GitHub moves it.
+- The CI of this action runs on Ubuntu 24.04 and 26.04. Other Ubuntu releases
+  give a warning, so that `ubuntu-latest` keeps working when GitHub moves it.
 - The action uses the runner's `bash`, `curl`, `tar`, `xz`, `sha256sum`, `sudo`
   without password and systemd.
 
