@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # Checks an installation in a job whose environment tries to change it:
-# BASH_ENV, fake tools first on PATH and NIX_* variables of the installer.
+# BASH_ENV, exported functions, SHELLOPTS with PS4, fake tools first on PATH
+# and NIX_* variables of the installer.
 set -euo pipefail
 fail() {
   printf '::error::%s\n' "$1"
   exit 1
 }
-for marker in bash-env-ran fake-tools-ran; do
+for marker in bash-env-ran functions-ran ps4-ran fake-tools-ran; do
   if [[ -e $RUNNER_TEMP/$marker ]]; then
     fail "The action used the job environment ($marker): $(<"$RUNNER_TEMP/$marker")"
   fi
