@@ -59,13 +59,13 @@ nix path-info --sigs "$path"
 echo "::endgroup::"
 
 echo "::group::Fetching from GitHub with the token"
-nix flake metadata --no-write-lock-file github:NixOS/nix/2.35.4 ||
+nix flake metadata --no-update-lock-file github:NixOS/nix/2.35.4 ||
   fail "Fetching a flake from GitHub failed."
 echo "::endgroup::"
 
 echo "::group::Sandboxed check"
 printf '%s-%s' "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" >tests/fixture/nonce
-output=$(nix flake check --no-write-lock-file --print-build-logs "path:$PWD/tests/fixture" 2>&1) ||
+output=$(nix flake check --no-update-lock-file --print-build-logs "path:$PWD/tests/fixture" 2>&1) ||
   fail "nix flake check failed: $output"
 echo "$output"
 echo "::endgroup::"

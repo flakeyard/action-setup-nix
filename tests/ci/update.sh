@@ -21,6 +21,18 @@ work=$(mktemp -d)
 trap 'rm -rf -- "$work"' EXIT
 cp -R scripts versions.sh README.md "$work/"
 sed -i "s/^NIX_VERSION=.*/NIX_VERSION=$previous/" "$work/versions.sh"
+# update-nix.sh checks the previous tarballs against these hashes before it
+# compares their installer scripts.
+for system in x86_64-linux aarch64-linux; do
+  hash=$(curl --proto '=https' --fail --silent --show-error --location --retry 3 \
+    "$NIX_BASE_URL/nix-$previous/nix-$previous-$system.tar.xz.sha256")
+  [[ $hash =~ ^[0-9a-f]{64}$ ]] || {
+    echo "::error::Invalid published SHA-256 of Nix $previous for $system: $hash"
+    exit 1
+  }
+  var=NIX_SHA256_${system//-/_}
+  sed -i "s/^$var=.*/$var=$hash/" "$work/versions.sh"
+done
 sed -i "s/This release installs Nix [0-9.]*[0-9]\./This release installs Nix $previous./" \
   "$work/README.md"
 

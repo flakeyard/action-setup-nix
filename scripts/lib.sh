@@ -1,6 +1,9 @@
 # shellcheck shell=bash
 # Shared by the scripts of the action; sourced, not run.
 
+# set -e also in command substitutions.
+shopt -s inherit_errexit
+
 # Root of the file system and the tools of the runner. Only the tests change
 # them, in their own copy of the action; nothing at run time can.
 ROOT=

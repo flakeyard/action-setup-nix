@@ -7,6 +7,7 @@
 # versions.sh only when every system passed. Run with the pinned version, it
 # checks the pin and changes nothing; the CI does that.
 set -euo pipefail
+shopt -s inherit_errexit
 export LC_ALL=C
 
 version=${1:?usage: update-nix.sh VERSION}
@@ -33,6 +34,7 @@ fetch() {
 
 script=$(<"$versions")
 for system in x86_64-linux aarch64-linux; do
+  var=NIX_SHA256_${system//-/_}
   tarball=$(fetch "$version" "$system")
   published=$(curl --proto '=https' --fail --silent --show-error --location \
     --retry 3 "$NIX_BASE_URL/nix-$version/nix-$version-$system.tar.xz.sha256")
@@ -47,16 +49,29 @@ for system in x86_64-linux aarch64-linux; do
   # The installer scripts are not signed: show what changed for review.
   if [[ $version != "$NIX_VERSION" ]]; then
     pinned=$(fetch "$NIX_VERSION" "$system")
+    pinned_actual=$(sha256sum "$pinned")
+    pinned_actual=${pinned_actual%% *}
+    [[ $pinned_actual == "${!var}" ]] || {
+      echo "error: the pinned tarball for $system has SHA-256 $pinned_actual, pinned ${!var}" >&2
+      exit 1
+    }
     mkdir -p "$work/old" "$work/new"
-    tar --extract --xz --file "$pinned" --directory "$work/old" --exclude '*/store'
-    tar --extract --xz --file "$tarball" --directory "$work/new" --exclude '*/store'
+    tar --extract --xz --file "$pinned" --directory "$work/old" \
+      --anchored --exclude "nix-$NIX_VERSION-$system/store"
+    tar --extract --xz --file "$tarball" --directory "$work/new" \
+      --anchored --exclude "nix-$version-$system/store"
     echo "Changes of the installer scripts for $system since $NIX_VERSION:"
-    diff -ru --exclude .reginfo "$work/old/nix-$NIX_VERSION-$system" \
-      "$work/new/nix-$version-$system" || true
+    # Status 1 means differences; more is an error of diff.
+    diff_status=0
+    diff -ruN --exclude .reginfo "$work/old/nix-$NIX_VERSION-$system" \
+      "$work/new/nix-$version-$system" || diff_status=$?
+    ((diff_status <= 1)) || {
+      echo "error: cannot compare the installer scripts for $system" >&2
+      exit 1
+    }
     rm -rf -- "$work/old" "$work/new"
   fi
 
-  var=NIX_SHA256_${system//-/_}
   # shellcheck disable=SC2001 # replaces whole lines
   script=$(sed -e "s/^$var=.*/$var=$actual/" <<<"$script")
 done
