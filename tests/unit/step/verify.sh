@@ -1,4 +1,4 @@
-# shellcheck shell=bash disable=SC2154,SC2034 # shared with tests/lib.sh
+# shellcheck shell=bash disable=SC2154,SC2034 # shared with tests/harness
 # Unit tests of scripts/step/verify.sh.
 
 # install NAME [VAR=VALUE...]: install and store a token like the action does.
@@ -7,8 +7,6 @@ install() {
   run "$1 (token)" ok step/configure-token.sh TOKEN=ghs_abc
   current=""
 }
-
-# --- verify.sh --------------------------------------------------------------
 
 setup
 install "verify: ok"

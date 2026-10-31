@@ -64,9 +64,9 @@ jobs:
           persist-credentials: false
       # Checks the pinned tarballs against the signed store paths of
       # cache.nixos.org; fails if versions.sh would change.
-      - run: tests/ci/pinned.sh
+      - run: tests/ci/pinned/check.sh
       # Updates a copy from the previous Nix release, as a maintainer would.
-      - run: tests/ci/update.sh
+      - run: tests/ci/pinned/update.sh
 
   install:
     name: Install on ${{ matrix.runner }}
@@ -93,7 +93,7 @@ jobs:
         env:
           NIX_VERSION: ${{ steps.setup.outputs.nix-version }}
           EXTRA_SUBSTITUTER: https://flakeyard.cachix.org
-        run: tests/ci/installation.sh
+        run: tests/ci/install/check.sh
 
       - name: Record the configuration
         run: >-
@@ -125,7 +125,7 @@ jobs:
       - uses: $/
         with:
           github-token: ""
-      - run: tests/ci/without-token.sh
+      - run: tests/ci/without-token/check.sh
 
   invalid-token:
     name: Install with an invalid token
@@ -140,7 +140,7 @@ jobs:
       - uses: $/
         with:
           github-token: ghs_invalid0000000000000000000000000000
-      - run: tests/ci/invalid-token.sh
+      - run: tests/ci/invalid-token/check.sh
 
   hostile-environment:
     name: Install in a hostile job environment
@@ -149,7 +149,7 @@ jobs:
     permissions:
       contents: read
     env:
-      BASH_ENV: ${{ github.workspace }}/tests/ci/hostile/bash-env
+      BASH_ENV: ${{ github.workspace }}/tests/ci/hostile-environment/bash-env
       NIX_CONFIG: sandbox = false
       NIX_USER_COUNT: "1"
       NIX_BUILD_GROUP_ID: "12345"
@@ -158,11 +158,11 @@ jobs:
         with:
           persist-credentials: false
       - name: Put fake tools first on PATH
-        run: echo "$GITHUB_WORKSPACE/tests/ci/hostile/bin" >>"$GITHUB_PATH"
+        run: echo "$GITHUB_WORKSPACE/tests/ci/hostile-environment/bin" >>"$GITHUB_PATH"
       - name: Export functions and shell options
-        run: tests/ci/hostile/github-env.sh
+        run: tests/ci/hostile-environment/github-env.sh
       - uses: $/
-      - run: tests/ci/hostile.sh
+      - run: tests/ci/hostile-environment/check.sh
 
   rejected:
     name: Reject ${{ matrix.case }}
@@ -195,7 +195,7 @@ jobs:
       - env:
           OUTCOME: ${{ steps.setup.outcome }}
         shell: bash
-        run: tests/ci/not-installed.sh
+        run: tests/ci/rejected/check.sh
 
   container:
     name: Reject a container job
@@ -211,10 +211,11 @@ jobs:
       - id: setup
         continue-on-error: true
         uses: $/
+      # Checked like the runners of the rejected job.
       - env:
           OUTCOME: ${{ steps.setup.outcome }}
         shell: bash
-        run: tests/ci/not-installed.sh
+        run: tests/ci/rejected/check.sh
 
   required:
     name: required

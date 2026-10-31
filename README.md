@@ -145,8 +145,13 @@ README. Commit the change as `fix(deps):` for a new patch version and as
 CI runs these checks for the pinned version and updates a copy from the previous
 Nix release, which must reproduce `versions.sh` and this README.
 
-Tests: `tests/run.sh` runs the unit tests of the scripts; `tests/ci/` holds the
-checks that the CI runs on real runners after the action.
+Layout: `scripts/step/` holds one script per step of `action.yml`, which runs
+them through `scripts/run-step.sh`; `scripts/lib/` holds what the steps share
+and `scripts/update/` the tools that update the pinned release.
+
+Tests: `tests/run.sh` runs the unit tests of the scripts in `tests/unit/`, which
+mirrors `scripts/`, with the helpers in `tests/harness/`; `tests/ci/<job>/`
+holds the checks that a job of the CI runs on real runners after the action.
 
 ## Bootstrap
 
