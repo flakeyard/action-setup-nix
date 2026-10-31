@@ -52,14 +52,14 @@ copy_action() {
   redirect_lib_paths
 }
 
-# redirect_lib_paths: ROOT and SYSTEM_PATH of lib.sh to $fs and the tools of
-# the tests; exits if lib.sh no longer has them.
+# redirect_lib_paths: ROOT and SYSTEM_PATH of lib/env.sh to $fs and the tools
+# of the tests; exits if lib/env.sh no longer has them.
 redirect_lib_paths() {
-  local lib=$action/scripts/lib.sh system_path=$root/tests/bin:$sysbin
+  local lib=$action/scripts/lib/env.sh system_path=$root/tests/bin:$sysbin
   sed -i -e "s|^ROOT=\$|ROOT=$fs|" -e "s|^SYSTEM_PATH=.*|SYSTEM_PATH=$system_path|" "$lib"
   # Without these, the scripts would look at the host.
   if ! grep -qx "ROOT=$fs" "$lib" || ! grep -qx "SYSTEM_PATH=$system_path" "$lib"; then
-    echo "tests/run.sh: cannot redirect ROOT and SYSTEM_PATH in lib.sh" >&2
+    echo "tests/run.sh: cannot redirect ROOT and SYSTEM_PATH in lib/env.sh" >&2
     exit 2
   fi
 }

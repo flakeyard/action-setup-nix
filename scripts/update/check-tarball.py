@@ -6,7 +6,7 @@ Checks a Nix release tarball against cache.nixos.org: every store path in it
 must be in the cache, signed by cache.nixos.org-1, with the NAR hash, size and
 references of the store path's contents in the tarball, and the tarball must
 contain no other store paths. The installer scripts next to the store are not
-covered by any signature; update-nix.sh shows their changes.
+covered by any signature; scripts/update/nix.sh shows their changes.
 
 With --nar-hash, prints for each PATH the NAR hash in the form of narinfo files
 and .reginfo, sha256:<nix32>, then a space and the NAR size.

@@ -33,7 +33,7 @@ runs:
     - name: Check the operating system
       if: runner.os != 'Linux'
       shell: bash
-      run: bash "$GITHUB_ACTION_PATH/scripts/unsupported-os.sh"
+      run: bash "$GITHUB_ACTION_PATH/scripts/step/unsupported-os.sh"
 
     - name: Check the runner and inputs
       shell: /usr/bin/bash --noprofile --norc -p -e -o pipefail {0}
@@ -41,21 +41,21 @@ runs:
         SUBSTITUTERS: ${{ inputs.extra-substituters }}
         KEYS: ${{ inputs.extra-trusted-public-keys }}
         TOKEN: ${{ inputs.github-token }}
-      run: /usr/bin/bash -p "$GITHUB_ACTION_PATH/scripts/run-step.sh" check.sh
+      run: /usr/bin/bash -p "$GITHUB_ACTION_PATH/scripts/run-step.sh" check
 
     - name: Install Nix
       shell: /usr/bin/bash --noprofile --norc -p -e -o pipefail {0}
       env:
         SUBSTITUTERS: ${{ inputs.extra-substituters }}
         KEYS: ${{ inputs.extra-trusted-public-keys }}
-      run: /usr/bin/bash -p "$GITHUB_ACTION_PATH/scripts/run-step.sh" install.sh
+      run: /usr/bin/bash -p "$GITHUB_ACTION_PATH/scripts/run-step.sh" install
 
     - name: Configure the GitHub token
       if: inputs.github-token != ''
       shell: /usr/bin/bash --noprofile --norc -p -e -o pipefail {0}
       env:
         TOKEN: ${{ inputs.github-token }}
-      run: /usr/bin/bash -p "$GITHUB_ACTION_PATH/scripts/run-step.sh" configure-token.sh
+      run: /usr/bin/bash -p "$GITHUB_ACTION_PATH/scripts/run-step.sh" configure-token
 
     - id: verify
       name: Check the installation
@@ -63,4 +63,4 @@ runs:
       env:
         SUBSTITUTERS: ${{ inputs.extra-substituters }}
         KEYS: ${{ inputs.extra-trusted-public-keys }}
-      run: /usr/bin/bash -p "$GITHUB_ACTION_PATH/scripts/run-step.sh" verify.sh
+      run: /usr/bin/bash -p "$GITHUB_ACTION_PATH/scripts/run-step.sh" verify
