@@ -29,8 +29,7 @@ finish
 
 setup
 fake_tarball "$NIX_VERSION" x86_64-linux 0.0.1
-sed -i "s|^NIX_SHA256_x86_64_linux=.*|NIX_SHA256_x86_64_linux=$(sha256sum <"$work/fixtures/nix-$NIX_VERSION-x86_64-linux.tar.xz" | cut -d' ' -f1)|" \
-  "$action/versions.sh"
+pin_tarball "$NIX_VERSION" x86_64-linux
 install "verify: wrong version"
 run "verify: wrong version" fail verify.sh
 expect message "Installed 'nix (Nix) 0.0.1', expected Nix $NIX_VERSION"
