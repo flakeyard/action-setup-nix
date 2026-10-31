@@ -46,9 +46,15 @@ expect message "passwordless sudo"
 finish
 
 setup
-printf 'ID=ubuntu\nVERSION_ID="26.04"\n' >"$fs/etc/os-release"
+printf 'ID=ubuntu\nVERSION_ID="28.04"\n' >"$fs/etc/os-release"
 run "check: untested Ubuntu warns" ok check.sh
-expect message "::warning::This action is not tested on ubuntu/26.04"
+expect message "::warning::This action is not tested on ubuntu/28.04"
+finish
+
+setup
+printf 'ID=ubuntu\nVERSION_ID="26.04"\n' >"$fs/etc/os-release"
+run "check: Ubuntu 26.04 is tested" ok check.sh
+expect no-message "::warning::"
 finish
 
 # --- check.sh: Nix installed before -----------------------------------------
