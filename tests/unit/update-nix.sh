@@ -4,7 +4,7 @@
 # --- update-nix.sh ------------------------------------------------------------
 
 # update_setup: releases $NIX_VERSION (pinned) and 9.0.0 of both systems, and a
-# check-tarball.sh that fails for the systems in $FAIL_SYSTEMS.
+# check-tarball.py that fails for the systems in $FAIL_SYSTEMS.
 update_setup() {
   setup
   local system file
@@ -17,7 +17,7 @@ update_setup() {
       sha256sum <"$file" | cut -d' ' -f1 >"$file.sha256"
     done
   done
-  cat >"$action/scripts/check-tarball.sh" <<'EOF2'
+  cat >"$action/scripts/check-tarball.py" <<'EOF2'
 #!/usr/bin/env bash
 for system in ${FAIL_SYSTEMS-}; do
   [[ $1 != *"$system"* ]] || exit 1

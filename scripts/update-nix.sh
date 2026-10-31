@@ -2,7 +2,7 @@
 # Usage: scripts/update-nix.sh VERSION
 #
 # Pins the Nix release VERSION in versions.sh. Downloads the tarball of every
-# system, checks it against the published hash and with check-tarball.sh, shows
+# system, checks it against the published hash and with check-tarball.py, shows
 # how its installer scripts differ from the pinned release, and writes
 # versions.sh only when every system passed. Run with the pinned version, it
 # checks the pin and changes nothing; the CI does that.
@@ -44,7 +44,7 @@ for system in x86_64-linux aarch64-linux; do
     echo "error: the tarball for $system has SHA-256 $actual, published $published" >&2
     exit 1
   }
-  "$here/check-tarball.sh" "$tarball"
+  "$here/check-tarball.py" "$tarball"
 
   # The installer scripts are not signed: show what changed for review.
   if [[ $version != "$NIX_VERSION" ]]; then
