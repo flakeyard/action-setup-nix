@@ -4,8 +4,11 @@
 #
 # Inputs (environment): TOKEN.
 set -euo pipefail
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$(dirname -- "${BASH_SOURCE[0]}")/lib.sh"
+lib=$(dirname -- "${BASH_SOURCE[0]}")/../lib
+# shellcheck source-path=SCRIPTDIR source=../lib/env.sh
+source "$lib/env.sh"
+# shellcheck source-path=SCRIPTDIR source=../lib/runner.sh
+source "$lib/runner.sh"
 
 conf=$(user_conf)
 mkdir -p -- "$(dirname -- "$conf")"

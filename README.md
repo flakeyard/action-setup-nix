@@ -128,7 +128,7 @@ whose release notes list incompatible changes is a major release. See
 
 ## Maintenance
 
-To update Nix, run `scripts/update-nix.sh VERSION`; it needs `curl`, `openssl`,
+To update Nix, run `scripts/update/nix.sh VERSION`; it needs `curl`, `openssl`,
 `python3`, `tar` and `xz`, not Nix. For the tarball of every system, it:
 
 - compares the tarball with its published hash;

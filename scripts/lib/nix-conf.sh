@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 # Prints the settings that the action adds to /etc/nix/nix.conf. The inputs
-# must have passed check.sh.
+# must have passed step/check.sh.
 #
 # Inputs (environment): SUBSTITUTERS, KEYS.
 set -euo pipefail
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$(dirname -- "${BASH_SOURCE[0]}")/lib.sh"
+here=$(dirname -- "${BASH_SOURCE[0]}")
+# shellcheck source-path=SCRIPTDIR source=env.sh
+source "$here/env.sh"
+# shellcheck source-path=SCRIPTDIR source=text.sh
+source "$here/text.sh"
 
 substituters=() keys=()
 mapfile -t substituters < <(words "${SUBSTITUTERS-}")

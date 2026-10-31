@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Usage: scripts/update-nix.sh VERSION
+# Usage: scripts/update/nix.sh VERSION
 #
 # Pins the Nix release VERSION in versions.sh. Downloads the tarball of every
 # system, checks it against the published hash and with check-tarball.py, shows
@@ -14,15 +14,15 @@ SYSTEMS=(x86_64-linux aarch64-linux)
 CURL=(curl --proto '=https' --fail --silent --show-error --location --retry 3)
 VERSION_RE='^[0-9]+\.[0-9]+\.[0-9]+$'
 
-version=${1:?usage: update-nix.sh VERSION}
+version=${1:?usage: scripts/update/nix.sh VERSION}
 [[ $version =~ $VERSION_RE ]] || {
   echo "error: expected a version such as 2.35.4, got '$version'" >&2
   exit 2
 }
 here=$(dirname -- "${BASH_SOURCE[0]}")
-versions=$here/../versions.sh
-readme=$here/../README.md
-# shellcheck source-path=SCRIPTDIR source=../versions.sh
+versions=$here/../../versions.sh
+readme=$here/../../README.md
+# shellcheck source-path=SCRIPTDIR source=../../versions.sh
 source "$versions"
 
 work=$(mktemp -d)
