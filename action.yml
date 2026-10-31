@@ -22,8 +22,10 @@ outputs:
   nix-version:
     description: Installed Nix version, such as 2.35.4.
     value: ${{ steps.verify.outputs.nix-version }}
-# Steps use the runner's bash without BASH_ENV, so that earlier steps of the
-# job cannot inject code through the environment.
+# Steps use the runner's bash in privileged mode (-p), which reads no BASH_ENV
+# and imports no functions or shell options, and run-step.sh gives the scripts
+# only the variables they read, so that earlier steps of the job cannot inject
+# code through the environment.
 runs:
   using: composite
   steps:
@@ -34,31 +36,31 @@ runs:
       run: bash "$GITHUB_ACTION_PATH/scripts/unsupported-os.sh"
 
     - name: Check the runner and inputs
-      shell: /usr/bin/env -u BASH_ENV -u ENV /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+      shell: /usr/bin/bash --noprofile --norc -p -e -o pipefail {0}
       env:
         SUBSTITUTERS: ${{ inputs.extra-substituters }}
         KEYS: ${{ inputs.extra-trusted-public-keys }}
         TOKEN: ${{ inputs.github-token }}
-      run: /usr/bin/bash "$GITHUB_ACTION_PATH/scripts/check.sh"
+      run: /usr/bin/bash -p "$GITHUB_ACTION_PATH/scripts/run-step.sh" check.sh
 
     - name: Install Nix
-      shell: /usr/bin/env -u BASH_ENV -u ENV /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+      shell: /usr/bin/bash --noprofile --norc -p -e -o pipefail {0}
       env:
         SUBSTITUTERS: ${{ inputs.extra-substituters }}
         KEYS: ${{ inputs.extra-trusted-public-keys }}
-      run: /usr/bin/bash "$GITHUB_ACTION_PATH/scripts/install.sh"
+      run: /usr/bin/bash -p "$GITHUB_ACTION_PATH/scripts/run-step.sh" install.sh
 
     - name: Configure the GitHub token
       if: inputs.github-token != ''
-      shell: /usr/bin/env -u BASH_ENV -u ENV /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+      shell: /usr/bin/bash --noprofile --norc -p -e -o pipefail {0}
       env:
         TOKEN: ${{ inputs.github-token }}
-      run: /usr/bin/bash "$GITHUB_ACTION_PATH/scripts/configure-token.sh"
+      run: /usr/bin/bash -p "$GITHUB_ACTION_PATH/scripts/run-step.sh" configure-token.sh
 
     - id: verify
       name: Check the installation
-      shell: /usr/bin/env -u BASH_ENV -u ENV /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+      shell: /usr/bin/bash --noprofile --norc -p -e -o pipefail {0}
       env:
         SUBSTITUTERS: ${{ inputs.extra-substituters }}
         KEYS: ${{ inputs.extra-trusted-public-keys }}
-      run: /usr/bin/bash "$GITHUB_ACTION_PATH/scripts/verify.sh"
+      run: /usr/bin/bash -p "$GITHUB_ACTION_PATH/scripts/run-step.sh" verify.sh

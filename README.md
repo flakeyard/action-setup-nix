@@ -55,11 +55,12 @@ Reference the action by full commit SHA, as above. To use a binary cache besides
   official release tarball of NixOS/nix for the runner's system, verified
   against the SHA-256 recorded in the action. This release installs Nix 2.35.4.
 - **Installation.** The steps of the action run the runner's own `bash` and
-  tools, without `BASH_ENV`, and the official installer runs in daemon mode with
-  a reduced environment, so `PATH`, `NIX_*` and other variables of the job do
-  not change the version, the source or the installation. Steps that run before
-  the action can still change anything on the runner, through `sudo` too. Later
-  steps can rely on:
+  tools, without `BASH_ENV`, exported functions or shell options of the job, and
+  its scripts get only the variables they read. The official installer runs in
+  daemon mode with a reduced environment. So `PATH`, `NIX_*` and other variables
+  of the job do not change the version, the source or the installation. Steps
+  that run before the action can still change anything on the runner, through
+  `sudo` too. Later steps can rely on:
   - `nix` on `PATH`, from `/nix/var/nix/profiles/default/bin`;
   - a running `nix-daemon`, through systemd;
   - the group `nixbld` with 32 build users;
