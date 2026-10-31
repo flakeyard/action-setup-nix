@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Checks an installation made by the action on a real runner.
-# Usage: tests/ci/installation.sh
+# Usage: tests/ci/install/check.sh
 # Inputs (environment): NIX_VERSION (output of the action), EXTRA_SUBSTITUTER.
 set -euo pipefail
-cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.."
+cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../.."
 
 fail() {
   printf '::error::%s\n' "$1"
@@ -43,7 +43,7 @@ echo "::endgroup::"
   fail "A substituter given by the runner user was not reported as ignored."
 
 echo "::group::Network check outside the sandbox"
-if sh tests/fixture/no-network.sh; then
+if sh tests/ci/install/fixture/no-network.sh; then
   fail "The network check of the fixture passes outside the sandbox, so it proves nothing."
 fi
 echo "::endgroup::"
@@ -64,8 +64,8 @@ nix flake metadata --no-update-lock-file github:NixOS/nix/2.35.4 ||
 echo "::endgroup::"
 
 echo "::group::Sandboxed check"
-printf '%s-%s' "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" >tests/fixture/nonce
-output=$(nix flake check --no-update-lock-file --print-build-logs "path:$PWD/tests/fixture" 2>&1) ||
+printf '%s-%s' "$GITHUB_RUN_ID" "$GITHUB_RUN_ATTEMPT" >tests/ci/install/fixture/nonce
+output=$(nix flake check --no-update-lock-file --print-build-logs "path:$PWD/tests/ci/install/fixture" 2>&1) ||
   fail "nix flake check failed: $output"
 echo "$output"
 echo "::endgroup::"

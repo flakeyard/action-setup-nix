@@ -3,8 +3,8 @@
 # with scripts/update/nix.sh, on the real release tarballs. The result must
 # equal the committed versions.sh and README.
 set -euo pipefail
-cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.."
-# shellcheck source-path=SCRIPTDIR source=../../versions.sh
+cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../.."
+# shellcheck source-path=SCRIPTDIR source=../../../versions.sh
 source versions.sh
 
 tags=$(git ls-remote --tags https://github.com/NixOS/nix |

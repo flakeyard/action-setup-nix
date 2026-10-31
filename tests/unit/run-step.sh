@@ -1,4 +1,4 @@
-# shellcheck shell=bash disable=SC2154,SC2034 # shared with tests/lib.sh
+# shellcheck shell=bash disable=SC2154,SC2034 # shared with tests/harness
 # shellcheck disable=SC2016 # code for the scripts, not expanded here
 # Unit tests of scripts/run-step.sh.
 
@@ -31,8 +31,6 @@ env
 EOF2
 }
 
-# --- run-step.sh ------------------------------------------------------------
-
 probe_setup
 run "run-step: no functions or options of the job" ok as-action.sh \
   "${hostile_vars[@]}" -- probe
@@ -52,7 +50,7 @@ run "run-step: the variables of the scripts" ok as-action.sh \
 for var in SUBSTITUTERS=https://a KEYS=k TOKEN=t RUNNER_OS=Linux RUNNER_ARCH=X64 \
   RUNNER_ENVIRONMENT=github-hosted RUNNER_TEMP="$work/temp" \
   GITHUB_OUTPUT="$work/output" GITHUB_PATH="$work/path" HOME="$work/home" \
-  XDG_CONFIG_HOME=/x PATH="$root/tests/bin:$sysbin"; do
+  XDG_CONFIG_HOME=/x PATH="$root/tests/harness/stub:$sysbin"; do
   expect message "$var"
 done
 expect no-message "CALLS="
