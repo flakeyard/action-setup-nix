@@ -28,26 +28,12 @@ done
 setup() {
   work=$(mktemp -d)
   action=$work/action fs=$work/root
-  mkdir -p "$action" "$fs/run/systemd/system" "$fs/etc" "$work/home" \
-    "$work/fixtures" "$work/temp"
-  cp -R "$root/scripts" "$root/versions.sh" "$action/"
-  sed -i -e "s|^ROOT=\$|ROOT=$fs|" \
-    -e "s|^SYSTEM_PATH=.*|SYSTEM_PATH=$root/tests/bin:$sysbin|" "$action/scripts/lib.sh"
-  # Without these, the scripts would look at the host.
-  if ! grep -qx "ROOT=$fs" "$action/scripts/lib.sh" ||
-    ! grep -qx "SYSTEM_PATH=$root/tests/bin:$sysbin" "$action/scripts/lib.sh"; then
-    echo "tests/run.sh: cannot redirect ROOT and SYSTEM_PATH in lib.sh" >&2
-    exit 2
-  fi
-  printf 'ID=ubuntu\nVERSION_ID="24.04"\n' >"$fs/etc/os-release"
-  printf 'root:x:0:\nrunner:x:1001:\n' >"$fs/etc/group"
+  mkdir -p "$work/home" "$work/fixtures" "$work/temp"
+  copy_action
+  make_clean_runner
   fake_tarball "$NIX_VERSION" x86_64-linux
-  sed -i -e "s|^NIX_BASE_URL=.*|NIX_BASE_URL=https://example.test/nix|" \
-    -e "s|^NIX_SHA256_x86_64_linux=.*|NIX_SHA256_x86_64_linux=$(sha256sum <"$work/fixtures/nix-$NIX_VERSION-x86_64-linux.tar.xz" | cut -d' ' -f1)|" \
-    "$action/versions.sh"
-  : >"$work/calls"
-  : >"$work/output"
-  : >"$work/path"
+  pin_tarball "$NIX_VERSION" x86_64-linux
+  reset_records
   env_vars=(
     PATH="$root/tests/bin:$sysbin" HOME="$work/home"
     CALLS="$work/calls" FIXTURES="$work/fixtures"
@@ -57,11 +43,76 @@ setup() {
   )
 }
 
+# copy_action: the scripts and versions.sh in $action, which downloads from
+# example.test and looks at $fs instead of the host.
+copy_action() {
+  mkdir -p "$action"
+  cp -R "$root/scripts" "$root/versions.sh" "$action/"
+  sed -i -e "s|^NIX_BASE_URL=.*|NIX_BASE_URL=https://example.test/nix|" "$action/versions.sh"
+  redirect_lib_paths
+}
+
+# redirect_lib_paths: ROOT and SYSTEM_PATH of lib.sh to $fs and the tools of
+# the tests; exits if lib.sh no longer has them.
+redirect_lib_paths() {
+  local lib=$action/scripts/lib.sh system_path=$root/tests/bin:$sysbin
+  sed -i -e "s|^ROOT=\$|ROOT=$fs|" -e "s|^SYSTEM_PATH=.*|SYSTEM_PATH=$system_path|" "$lib"
+  # Without these, the scripts would look at the host.
+  if ! grep -qx "ROOT=$fs" "$lib" || ! grep -qx "SYSTEM_PATH=$system_path" "$lib"; then
+    echo "tests/run.sh: cannot redirect ROOT and SYSTEM_PATH in lib.sh" >&2
+    exit 2
+  fi
+}
+
+# make_clean_runner: $fs as a runner with systemd, Ubuntu 24.04 and no Nix.
+make_clean_runner() {
+  mkdir -p "$fs/run/systemd/system" "$fs/etc"
+  printf 'ID=ubuntu\nVERSION_ID="24.04"\n' >"$fs/etc/os-release"
+  printf 'root:x:0:\nrunner:x:1001:\n' >"$fs/etc/group"
+}
+
+# reset_records: empty files for the calls of the stubs and for GITHUB_OUTPUT
+# and GITHUB_PATH.
+reset_records() {
+  : >"$work/calls"
+  : >"$work/output"
+  : >"$work/path"
+}
+
+# tarball_fixture VERSION SYSTEM: prints the path of a release tarball that the
+# curl stub serves.
+tarball_fixture() {
+  local version=$1 system=$2
+  echo "$work/fixtures/nix-$version-$system.tar.xz"
+}
+
+# sha256_of FILE: prints the SHA-256 of FILE.
+sha256_of() {
+  sha256sum <"$1" | cut -d' ' -f1
+}
+
+# pin_tarball VERSION SYSTEM: pins the hash of the release tarball of SYSTEM
+# in the copy of the action.
+pin_tarball() {
+  local version=$1 system=$2 var=NIX_SHA256_${2//-/_} hash
+  hash=$(sha256_of "$(tarball_fixture "$version" "$system")")
+  sed -i -e "s|^$var=.*|$var=$hash|" "$action/versions.sh"
+}
+
+# repack_tarball VERSION SYSTEM: packs $work/tarball/nix-VERSION-SYSTEM again
+# into the release tarball, after a change.
+repack_tarball() {
+  local version=$1 system=$2
+  tar --create --xz --file "$(tarball_fixture "$version" "$system")" \
+    --directory "$work/tarball" "nix-$version-$system"
+}
+
 # fake_tarball VERSION SYSTEM [NIX_VERSION_OUTPUT]: a release tarball whose
 # installer records its arguments and environment, writes nix.conf like the
 # real one and installs a stub of nix.
 fake_tarball() {
-  local dir=$work/tarball/nix-$1-$2
+  local version=$1 system=$2 reported=${3:-$1}
+  local dir=$work/tarball/nix-$version-$system
   mkdir -p "$dir"
   cat >"$dir/install" <<EOF
 #!/bin/bash
@@ -76,7 +127,7 @@ mkdir -p "$fs/etc/nix" "$fs/nix/var/nix/profiles/default/bin"
 cat >"$fs/nix/var/nix/profiles/default/bin/nix" <<'NIX'
 #!/bin/bash
 case "\$*" in
-  --version) echo "nix (Nix) ${3:-$1}" ;;
+  --version) echo "nix (Nix) $reported" ;;
   "store info") [[ ! -e "$work/daemon-down" ]] ;;
   "config show "*) sed -n "s/^\$3 = //p" "$fs/etc/nix/nix.conf" ;;
   *) exit 1 ;;
@@ -85,8 +136,7 @@ NIX
 chmod +x "$fs/nix/var/nix/profiles/default/bin/nix"
 EOF
   chmod +x "$dir/install"
-  tar --create --xz --file "$work/fixtures/nix-$1-$2.tar.xz" \
-    --directory "$work/tarball" "nix-$1-$2"
+  repack_tarball "$version" "$system"
 }
 
 # run NAME EXPECTED SCRIPT [VAR=VALUE...] [-- ARG...]: run a script of the
