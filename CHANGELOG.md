@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.1](https://github.com/flakeyard/action-setup-nix/compare/v0.1.0...v0.1.1) (2026-10-31)
+
+
+### Bug Fixes
+
+* gaps in the tarball checks ([#20](https://github.com/flakeyard/action-setup-nix/issues/20)) ([27553d4](https://github.com/flakeyard/action-setup-nix/commit/27553d493e3fb4138fdf73fe02b7a8804231d131))
+* run the scripts without functions, shell options and variables of the job ([#19](https://github.com/flakeyard/action-setup-nix/issues/19)) ([4e095ce](https://github.com/flakeyard/action-setup-nix/commit/4e095cea174450f3a34e521b433b519899c2d909))
+
 ## 0.1.0 (2026-10-28)
 
 
