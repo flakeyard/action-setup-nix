@@ -4,7 +4,7 @@
 # --- check-tarball.sh ---------------------------------------------------------
 
 # A key of a test cache, and names of two store paths.
-signing_key=$sysbin/../signing.pem
+signing_key=$shared/signing.pem
 openssl genpkey -algorithm ed25519 -out "$signing_key" 2>/dev/null
 test_key=test-1:$(openssl pkey -in "$signing_key" -pubout -outform DER | tail -c 32 | base64)
 dep=$(printf 'a%.0s' {1..32})-dep-1.0
