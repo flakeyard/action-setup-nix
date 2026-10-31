@@ -9,6 +9,7 @@
 #
 # Needs curl, openssl, python3, tar and xz; not Nix.
 set -euo pipefail
+shopt -s inherit_errexit
 export LC_ALL=C
 
 cache=https://cache.nixos.org

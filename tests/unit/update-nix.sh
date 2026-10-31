@@ -63,3 +63,50 @@ sed -i "s|^NIX_SHA256_aarch64_linux=.*|NIX_SHA256_aarch64_linux=0000|" "$action/
 run "update-nix: a wrong pin is corrected" ok update-nix.sh -- "$NIX_VERSION"
 expect message "Pinned Nix $NIX_VERSION."
 finish
+
+update_setup
+echo tampered >>"$work/fixtures/nix-$NIX_VERSION-aarch64-linux.tar.xz"
+run "update-nix: the pinned release is checked before the diff" fail update-nix.sh -- 9.0.0
+expect message "error: the pinned tarball for aarch64-linux has SHA-256"
+expect no-message "Changes of the installer scripts for aarch64-linux"
+expect file "$action/versions.sh" "$(cat "$work/versions.before")"
+finish
+
+# repack_new SYSTEM: packs release 9.0.0 of SYSTEM again after a change, with
+# its published hash.
+repack_new() {
+  local name=nix-9.0.0-$1
+  tar --create --xz --file "$work/fixtures/$name.tar.xz" --directory "$work/tarball" "$name"
+  sha256sum <"$work/fixtures/$name.tar.xz" | cut -d' ' -f1 >"$work/fixtures/$name.tar.xz.sha256"
+}
+
+update_setup
+mkdir -p "$work/tarball/nix-9.0.0-x86_64-linux/doc"
+echo "new installer file" >"$work/tarball/nix-9.0.0-x86_64-linux/doc/store"
+repack_new x86_64-linux
+run "update-nix: shows new files, also those named store" ok update-nix.sh -- 9.0.0
+expect message "+new installer file"
+finish
+
+if ((EUID != 0)); then
+  update_setup
+  # A file that diff cannot read: added to the tarball with mode 000.
+  echo secret >"$work/unreadable"
+  tar --create --file "$work/new.tar" --directory "$work/tarball" nix-9.0.0-x86_64-linux
+  tar --append --file "$work/new.tar" --directory "$work" --mode=000 \
+    --transform 's|^|nix-9.0.0-x86_64-linux/|' unreadable
+  xz --stdout "$work/new.tar" >"$work/fixtures/nix-9.0.0-x86_64-linux.tar.xz"
+  sha256sum <"$work/fixtures/nix-9.0.0-x86_64-linux.tar.xz" | cut -d' ' -f1 \
+    >"$work/fixtures/nix-9.0.0-x86_64-linux.tar.xz.sha256"
+  run "update-nix: an error of diff fails" fail update-nix.sh -- 9.0.0
+  expect message "error: cannot compare the installer scripts for x86_64-linux"
+  expect file "$action/versions.sh" "$(cat "$work/versions.before")"
+  finish
+fi
+
+update_setup
+rm "$work/fixtures/nix-9.0.0-aarch64-linux.tar.xz"
+run "update-nix: a failed download stops" fail update-nix.sh -- 9.0.0
+expect message "curl: (22)"
+expect no-message "No such file"
+finish

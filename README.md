@@ -136,7 +136,8 @@ To update Nix, run `scripts/update-nix.sh VERSION`; it needs `curl`, `openssl`,
   `cache.nixos.org-1`, with the NAR hash, size and references of its contents in
   the tarball, and that the tarball contains no other store paths;
 - shows how the installer scripts, which no signature covers, changed since the
-  pinned release, for review.
+  pinned release, for review; the tarball of the pinned release must match its
+  pinned hash.
 
 Only when every system passed, it writes `versions.sh` and the version in this
 README. Commit the change as `fix(deps):` for a new patch version and as
