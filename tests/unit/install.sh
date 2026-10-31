@@ -38,14 +38,13 @@ finish
 
 setup
 fake_tarball "$NIX_VERSION" aarch64-linux
-sed -i "s|^NIX_SHA256_aarch64_linux=.*|NIX_SHA256_aarch64_linux=$(sha256sum <"$work/fixtures/nix-$NIX_VERSION-aarch64-linux.tar.xz" | cut -d' ' -f1)|" \
-  "$action/versions.sh"
+pin_tarball "$NIX_VERSION" aarch64-linux
 run "install: arm64 tarball" ok install.sh RUNNER_ARCH=ARM64
 expect call "curl https://example.test/nix/nix-$NIX_VERSION/nix-$NIX_VERSION-aarch64-linux.tar.xz"
 finish
 
 setup
-echo tampered >>"$work/fixtures/nix-$NIX_VERSION-x86_64-linux.tar.xz"
+echo tampered >>"$(tarball_fixture "$NIX_VERSION" x86_64-linux)"
 run "install: hash mismatch installs nothing" fail install.sh
 expect message "::error::SHA-256 of https://example.test/nix/nix-$NIX_VERSION/nix-$NIX_VERSION-x86_64-linux.tar.xz is"
 expect no-call "install --daemon"
@@ -53,7 +52,7 @@ expect no-call "install --daemon"
 finish
 
 setup
-rm "$work/fixtures/nix-$NIX_VERSION-x86_64-linux.tar.xz"
+rm "$(tarball_fixture "$NIX_VERSION" x86_64-linux)"
 run "install: download failure" fail install.sh
 expect no-call "install --daemon"
 finish
@@ -89,10 +88,8 @@ finish
 
 setup
 sed -i 's|^#!/bin/bash$|#!/bin/bash\nexit 3|' "$work/tarball/nix-$NIX_VERSION-x86_64-linux/install"
-tar --create --xz --file "$work/fixtures/nix-$NIX_VERSION-x86_64-linux.tar.xz" \
-  --directory "$work/tarball" "nix-$NIX_VERSION-x86_64-linux"
-sed -i "s|^NIX_SHA256_x86_64_linux=.*|NIX_SHA256_x86_64_linux=$(sha256sum <"$work/fixtures/nix-$NIX_VERSION-x86_64-linux.tar.xz" | cut -d' ' -f1)|" \
-  "$action/versions.sh"
+repack_tarball "$NIX_VERSION" x86_64-linux
+pin_tarball "$NIX_VERSION" x86_64-linux
 run "install: installer failure" fail install.sh
 expect message "::error::The Nix installer failed"
 [[ -z $current || ! -s $work/path ]] || report "PATH was extended: $(cat "$work/path")"

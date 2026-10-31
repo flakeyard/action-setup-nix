@@ -3,19 +3,25 @@
 
 # --- update-nix.sh ------------------------------------------------------------
 
+# publish_hash VERSION SYSTEM: publishes the SHA-256 of a release tarball next
+# to it, like releases.nixos.org.
+publish_hash() {
+  local tarball
+  tarball=$(tarball_fixture "$@")
+  sha256_of "$tarball" >"$tarball.sha256"
+}
+
 # update_setup: releases $NIX_VERSION (pinned) and 9.0.0 of both systems, and a
 # check-tarball.py that fails for the systems in $FAIL_SYSTEMS.
 update_setup() {
   setup
-  local system file
+  local system
   fake_tarball "$NIX_VERSION" aarch64-linux
-  sed -i "s|^NIX_SHA256_aarch64_linux=.*|NIX_SHA256_aarch64_linux=$(sha256sum <"$work/fixtures/nix-$NIX_VERSION-aarch64-linux.tar.xz" | cut -d' ' -f1)|" \
-    "$action/versions.sh"
+  pin_tarball "$NIX_VERSION" aarch64-linux
   for system in x86_64-linux aarch64-linux; do
     fake_tarball 9.0.0 "$system"
-    for file in "$work"/fixtures/nix-{"$NIX_VERSION",9.0.0}-"$system".tar.xz; do
-      sha256sum <"$file" | cut -d' ' -f1 >"$file.sha256"
-    done
+    publish_hash "$NIX_VERSION" "$system"
+    publish_hash 9.0.0 "$system"
   done
   cat >"$action/scripts/check-tarball.py" <<'EOF2'
 #!/usr/bin/env bash
@@ -72,18 +78,11 @@ expect no-message "Changes of the installer scripts for aarch64-linux"
 expect file "$action/versions.sh" "$(cat "$work/versions.before")"
 finish
 
-# repack_new SYSTEM: packs release 9.0.0 of SYSTEM again after a change, with
-# its published hash.
-repack_new() {
-  local name=nix-9.0.0-$1
-  tar --create --xz --file "$work/fixtures/$name.tar.xz" --directory "$work/tarball" "$name"
-  sha256sum <"$work/fixtures/$name.tar.xz" | cut -d' ' -f1 >"$work/fixtures/$name.tar.xz.sha256"
-}
-
 update_setup
 mkdir -p "$work/tarball/nix-9.0.0-x86_64-linux/doc"
 echo "new installer file" >"$work/tarball/nix-9.0.0-x86_64-linux/doc/store"
-repack_new x86_64-linux
+repack_tarball 9.0.0 x86_64-linux
+publish_hash 9.0.0 x86_64-linux
 run "update-nix: shows new files, also those named store" ok update-nix.sh -- 9.0.0
 expect message "+new installer file"
 finish
@@ -95,9 +94,8 @@ if ((EUID != 0)); then
   tar --create --file "$work/new.tar" --directory "$work/tarball" nix-9.0.0-x86_64-linux
   tar --append --file "$work/new.tar" --directory "$work" --mode=000 \
     --transform 's|^|nix-9.0.0-x86_64-linux/|' unreadable
-  xz --stdout "$work/new.tar" >"$work/fixtures/nix-9.0.0-x86_64-linux.tar.xz"
-  sha256sum <"$work/fixtures/nix-9.0.0-x86_64-linux.tar.xz" | cut -d' ' -f1 \
-    >"$work/fixtures/nix-9.0.0-x86_64-linux.tar.xz.sha256"
+  xz --stdout "$work/new.tar" >"$(tarball_fixture 9.0.0 x86_64-linux)"
+  publish_hash 9.0.0 x86_64-linux
   run "update-nix: an error of diff fails" fail update-nix.sh -- 9.0.0
   expect message "error: cannot compare the installer scripts for x86_64-linux"
   expect file "$action/versions.sh" "$(cat "$work/versions.before")"
