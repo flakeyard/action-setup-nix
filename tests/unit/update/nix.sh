@@ -1,7 +1,5 @@
-# shellcheck shell=bash disable=SC2154,SC2034 # shared with tests/lib.sh
+# shellcheck shell=bash disable=SC2154,SC2034 # shared with tests/harness
 # Unit tests of scripts/update/nix.sh.
-
-# --- update-nix.sh ------------------------------------------------------------
 
 # publish_hash VERSION SYSTEM: publishes the SHA-256 of a release tarball next
 # to it, like releases.nixos.org.

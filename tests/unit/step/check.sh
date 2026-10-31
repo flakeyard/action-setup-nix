@@ -1,7 +1,7 @@
-# shellcheck shell=bash disable=SC2154,SC2034 # shared with tests/lib.sh
-# Unit tests of scripts/step/check.sh and unsupported-os.sh.
+# shellcheck shell=bash disable=SC2154,SC2034 # shared with tests/harness
+# Unit tests of scripts/step/check.sh.
 
-# --- check.sh: runner -------------------------------------------------------
+# --- runner -------------------------------------------------------
 
 setup
 run "check: clean runner" ok step/check.sh
@@ -57,7 +57,7 @@ run "check: Ubuntu 26.04 is tested" ok step/check.sh
 expect no-message "::warning::"
 finish
 
-# --- check.sh: Nix installed before -----------------------------------------
+# --- Nix installed before -----------------------------------------
 
 setup
 mkdir "$fs/nix"
@@ -90,11 +90,11 @@ touch "$work/xdg/nix/nix.conf"
 printf '#!/bin/sh\n' >"$work/bin/nix"
 chmod +x "$work/bin/nix"
 run "check: nix on PATH and XDG_CONFIG_HOME conf" fail step/check.sh \
-  XDG_CONFIG_HOME="$work/xdg" PATH="$work/bin:$root/tests/bin:$sysbin"
+  XDG_CONFIG_HOME="$work/xdg" PATH="$work/bin:$root/tests/harness/stub:$sysbin"
 expect message "found: nix on PATH $work/xdg/nix/nix.conf"
 finish
 
-# --- check.sh: inputs -------------------------------------------------------
+# --- inputs -------------------------------------------------------
 
 setup
 run "check: substituter and key" ok step/check.sh \
@@ -177,7 +177,7 @@ run "check: reports every problem at once" fail step/check.sh \
 expect errors 5
 finish
 
-# --- check.sh: more ---------------------------------------------------------
+# --- more ---------------------------------------------------------
 
 setup
 run "check: carriage return cannot start a workflow command" fail step/check.sh \
@@ -201,10 +201,3 @@ for leftover in etc/xdg/nix etc/systemd/system/nix-daemon.service etc/bashrc.bac
   expect message "found: /$leftover"
   finish
 done
-
-# --- unsupported-os.sh ------------------------------------------------------
-
-setup
-run "unsupported-os: names the runner" fail step/unsupported-os.sh RUNNER_OS=Windows
-expect message "::error::Unsupported runner Windows: use a GitHub-hosted Linux runner"
-finish

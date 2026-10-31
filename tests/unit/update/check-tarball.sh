@@ -1,7 +1,5 @@
-# shellcheck shell=bash disable=SC2154,SC2034 # shared with tests/lib.sh
+# shellcheck shell=bash disable=SC2154,SC2034 # shared with tests/harness
 # Unit tests of scripts/update/check-tarball.py.
-
-# --- check-tarball.py ---------------------------------------------------------
 
 # A key of a test cache, and names of two store paths.
 signing_key=$shared/signing.pem
