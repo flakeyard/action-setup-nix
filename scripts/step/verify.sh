@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # Checks the installed Nix: its version, the daemon, and that /etc/nix/nix.conf
-# holds the settings of nix-conf.sh and nothing else but the installer's.
+# holds the settings of lib/nix-conf.sh and nothing else but the installer's.
 #
 # Inputs (environment): SUBSTITUTERS, KEYS, GITHUB_OUTPUT.
 set -euo pipefail
-here=$(dirname -- "${BASH_SOURCE[0]}")
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$here/lib.sh"
+lib=$(dirname -- "${BASH_SOURCE[0]}")/../lib
+# shellcheck source-path=SCRIPTDIR source=../lib/env.sh
+source "$lib/env.sh"
+# shellcheck source-path=SCRIPTDIR source=../lib/runner.sh
+source "$lib/runner.sh"
 
 # Only the runner user's own settings, not those of the job environment, such
 # as NIX_CONFIG.
@@ -28,7 +30,7 @@ version=$(nix --version) || fail "nix --version failed."
 
 nix store info >/dev/null || fail "The Nix daemon does not answer."
 
-expected=$("$here/nix-conf.sh")
+expected=$("$lib/nix-conf.sh")
 actual=$(<"$conf")
 [[ $actual == "$expected"$'\n'* ]] ||
   fail "$conf does not start with the settings of this action."

@@ -1,5 +1,5 @@
 # shellcheck shell=bash disable=SC2034
-# The Nix release this action installs. Update with scripts/update-nix.sh,
+# The Nix release this action installs. Update with scripts/update/nix.sh,
 # never by hand: the hashes are checked against cache.nixos.org there.
 NIX_VERSION=2.35.4
 NIX_BASE_URL=https://releases.nixos.org/nix

@@ -4,8 +4,13 @@
 #
 # Inputs (environment): SUBSTITUTERS, KEYS, TOKEN.
 set -euo pipefail
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$(dirname -- "${BASH_SOURCE[0]}")/lib.sh"
+lib=$(dirname -- "${BASH_SOURCE[0]}")/../lib
+# shellcheck source-path=SCRIPTDIR source=../lib/env.sh
+source "$lib/env.sh"
+# shellcheck source-path=SCRIPTDIR source=../lib/runner.sh
+source "$lib/runner.sh"
+# shellcheck source-path=SCRIPTDIR source=../lib/text.sh
+source "$lib/text.sh"
 
 # Values go into nix.conf, which the daemon reads: no whitespace inside a
 # value, no query (?trusted=1 disables signature checks), no fragment (#

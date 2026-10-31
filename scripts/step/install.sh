@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 # Downloads the pinned Nix release tarball, verifies its hash and runs its
-# installer in daemon mode with the settings of nix-conf.sh.
+# installer in daemon mode with the settings of lib/nix-conf.sh.
 #
 # Inputs (environment): SUBSTITUTERS, KEYS, RUNNER_ARCH, RUNNER_TEMP,
 # GITHUB_PATH.
 set -euo pipefail
-here=$(dirname -- "${BASH_SOURCE[0]}")
-# shellcheck source-path=SCRIPTDIR source=lib.sh
-source "$here/lib.sh"
+lib=$(dirname -- "${BASH_SOURCE[0]}")/../lib
+# shellcheck source-path=SCRIPTDIR source=../lib/env.sh
+source "$lib/env.sh"
+# shellcheck source-path=SCRIPTDIR source=../lib/runner.sh
+source "$lib/runner.sh"
 
 system=$(nix_system)
 hash_var=NIX_SHA256_${system//-/_}
@@ -32,7 +34,7 @@ if [[ $actual != "$expected" ]]; then
 fi
 
 tar --extract --xz --file "$work/nix.tar.xz" --directory "$work"
-"$here/nix-conf.sh" >"$work/nix.conf"
+"$lib/nix-conf.sh" >"$work/nix.conf"
 
 # The installer reads NIX_* and other variables, which earlier steps can set
 # for the whole job; it gets only what it needs.

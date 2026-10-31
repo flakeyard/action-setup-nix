@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Updates a copy of the action from the previous Nix release to the pinned one
-# with update-nix.sh, on the real release tarballs. The result must equal the
-# committed versions.sh and README.
+# with scripts/update/nix.sh, on the real release tarballs. The result must
+# equal the committed versions.sh and README.
 set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.."
 # shellcheck source-path=SCRIPTDIR source=../../versions.sh
@@ -21,8 +21,8 @@ work=$(mktemp -d)
 trap 'rm -rf -- "$work"' EXIT
 cp -R scripts versions.sh README.md "$work/"
 sed -i "s/^NIX_VERSION=.*/NIX_VERSION=$previous/" "$work/versions.sh"
-# update-nix.sh checks the previous tarballs against these hashes before it
-# compares their installer scripts.
+# scripts/update/nix.sh checks the previous tarballs against these hashes
+# before it compares their installer scripts.
 for system in x86_64-linux aarch64-linux; do
   hash=$(curl --proto '=https' --fail --silent --show-error --location --retry 3 \
     "$NIX_BASE_URL/nix-$previous/nix-$previous-$system.tar.xz.sha256")
@@ -36,7 +36,7 @@ done
 sed -i "s/This release installs Nix [0-9.]*[0-9]\./This release installs Nix $previous./" \
   "$work/README.md"
 
-"$work/scripts/update-nix.sh" "$NIX_VERSION"
+"$work/scripts/update/nix.sh" "$NIX_VERSION"
 diff -u versions.sh "$work/versions.sh"
 diff -u README.md "$work/README.md"
 echo "The update from $previous reproduces the pin of $NIX_VERSION."
