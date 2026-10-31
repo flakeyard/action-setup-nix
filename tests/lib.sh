@@ -12,9 +12,13 @@ key=cache.example.org-1:$(printf 'k%.0s' {1..43})=
 # shellcheck source-path=SCRIPTDIR source=../versions.sh
 source "$root/versions.sh"
 
+# Files shared by all tests, removed at the end.
+shared=$(mktemp -d)
+trap 'rm -rf -- "$shared"' EXIT
+
 # The tools the scripts use, without a nix the host may have.
-sysbin=$(mktemp -d)
-trap 'rm -rf -- "$sysbin"' EXIT
+sysbin=$shared/bin
+mkdir "$sysbin"
 for tool in bash env sed grep cat cp mv rm mkdir mktemp dirname id stat chmod \
   sha256sum tar xz cut ls touch python3 openssl base64 sort cmp diff jq paste; do
   ln -s "$(command -v "$tool")" "$sysbin/$tool"
