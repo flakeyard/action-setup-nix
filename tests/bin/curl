@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
-# Stub of curl for tests: answers a URL from $FIXTURES/<last path segment of
-# the URL>, into the file given by --output or on stdout. A missing file is
-# HTTP 404: with --fail, an error like curl's; with --write-out '%{http_code}',
-# the code. The URL is appended to $CALLS.
+# Stub of curl for tests: answers each URL from $FIXTURES/<last path segment of
+# the URL>, into the file given by its --output, in order, or on stdout. A
+# missing file is HTTP 404: with --fail, an error like curl's; with --write-out,
+# whose %{http_code} and \n are replaced after each URL, the code. Each URL is
+# appended to $CALLS.
 set -euo pipefail
-output="" url="" fail=false write_out=""
+urls=() outputs=() fail=false write_out=""
 while (($#)); do
   case $1 in
     --output)
-      output=$2
+      outputs+=("$2")
       shift 2
       ;;
     --write-out)
@@ -21,24 +22,35 @@ while (($#)); do
     --fail) fail=true && shift ;;
     -*) shift ;;
     *)
-      url=$1
+      urls+=("$1")
       shift
       ;;
   esac
 done
-echo "curl $url" >>"$CALLS"
-file=$FIXTURES/${url##*/}
-code=200
-if [[ ! -f $file ]]; then
-  code=404
-  if $fail || [[ -z $write_out ]]; then
-    echo "curl: (22) The requested URL returned error: 404" >&2
-    exit 22
+
+# answer URL OUTPUT: serves one URL; OUTPUT is empty for stdout.
+answer() {
+  local url=$1 output=$2 file code=200
+  echo "curl $url" >>"$CALLS"
+  file=$FIXTURES/${url##*/}
+  if [[ ! -f $file ]]; then
+    code=404
+    if $fail || [[ -z $write_out ]]; then
+      echo "curl: (22) The requested URL returned error: 404" >&2
+      exit 22
+    fi
+    : >"${output:-/dev/null}"
+  elif [[ -n $output ]]; then
+    cp -- "$file" "$output"
+  else
+    cat -- "$file"
   fi
-  : >"${output:-/dev/null}"
-elif [[ -n $output ]]; then
-  cp -- "$file" "$output"
-else
-  cat -- "$file"
-fi
-[[ $write_out != '%{http_code}' ]] || printf '%s' "$code"
+  if [[ -n $write_out ]]; then
+    local text=${write_out//'%{http_code}'/$code}
+    printf '%s' "${text//'\n'/$'\n'}"
+  fi
+}
+
+for i in "${!urls[@]}"; do
+  answer "${urls[i]}" "${outputs[i]-}"
+done
