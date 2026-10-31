@@ -1,27 +1,5 @@
-# shellcheck shell=bash disable=SC2154,SC2034 # shared with tests/lib.sh
-# Unit tests of scripts/lib/nix-conf.sh, step/install.sh and
-# step/configure-token.sh.
-
-# --- nix-conf.sh ------------------------------------------------------------
-
-setup
-run "nix-conf: defaults" ok lib/nix-conf.sh
-expect message "sandbox = true"
-expect message "sandbox-fallback = false"
-expect message "substituters = https://cache.nixos.org/"
-expect message "accept-flake-config = false"
-expect no-message "extra-substituters"
-expect no-message "extra-trusted-public-keys"
-finish
-
-setup
-run "nix-conf: extra caches on one line each" ok lib/nix-conf.sh \
-  SUBSTITUTERS=$'https://a.example.org\n https://b.example.org' KEYS="$key"
-expect message "extra-substituters = https://a.example.org https://b.example.org"
-expect message "extra-trusted-public-keys = $key"
-finish
-
-# --- install.sh -------------------------------------------------------------
+# shellcheck shell=bash disable=SC2154,SC2034 # shared with tests/harness
+# Unit tests of scripts/step/install.sh.
 
 setup
 run "install: installs the pinned tarball" ok step/install.sh \
@@ -63,29 +41,6 @@ run "install: extra caches reach nix.conf" ok step/install.sh \
   SUBSTITUTERS="https://cache.example.org" KEYS="$key"
 expect file "$fs/etc/nix/nix.conf" "$(SUBSTITUTERS="https://cache.example.org" KEYS="$key" "$action/scripts/lib/nix-conf.sh")"$'\n'"build-users-group = nixbld"
 finish
-
-# --- configure-token.sh -----------------------------------------------------
-
-setup
-run "token: written for the user only" ok step/configure-token.sh TOKEN=ghs_abc
-expect file "$work/home/.config/nix/nix.conf" "access-tokens = github.com=ghs_abc"
-expect mode "$work/home/.config/nix/nix.conf" 600
-finish
-
-setup
-mkdir -p "$work/xdg"
-run "token: XDG_CONFIG_HOME" ok step/configure-token.sh TOKEN=ghs_abc XDG_CONFIG_HOME="$work/xdg"
-expect file "$work/xdg/nix/nix.conf" "access-tokens = github.com=ghs_abc"
-finish
-
-setup
-mkdir -p "$work/home/.config/nix"
-echo "accept-flake-config = true" >"$work/home/.config/nix/nix.conf"
-run "token: does not overwrite a conf it did not write" fail step/configure-token.sh TOKEN=ghs_abc
-expect file "$work/home/.config/nix/nix.conf" "accept-flake-config = true"
-finish
-
-# --- install.sh: failures -----------------------------------------------------
 
 setup
 sed -i 's|^#!/bin/bash$|#!/bin/bash\nexit 3|' "$work/tarball/nix-$NIX_VERSION-x86_64-linux/install"
