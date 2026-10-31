@@ -156,6 +156,9 @@ are released:
   the atoms);
 - pull request titles are checked by the reviewer (provider: `workflow-check`);
 - rulesets require no status checks (provider: `workflow-check`);
+- the jobs `pending` and `required` of `.github/workflows/test.yaml` and
+  `.github/scripts/` are a copy shared with the other bootstrapped repositories
+  (provider: `workflow-check`);
 - OpenSSF Scorecard is not run (provider: `workflow-check`).
 
 ## License
