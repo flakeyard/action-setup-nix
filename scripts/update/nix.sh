@@ -4,8 +4,9 @@
 # Pins the Nix release VERSION in versions.sh. Downloads the tarball of every
 # system, checks it against the published hash and with check-tarball.py, shows
 # how its installer scripts differ from the pinned release, and writes
-# versions.sh only when every system passed. Run with the pinned version, it
-# checks the pin and changes nothing; the CI does that.
+# versions.sh only when every system passed, with the replaced release as
+# PREVIOUS_NIX_VERSION. Run with the pinned version, it checks the pin and
+# changes nothing; the CI does that.
 set -euo pipefail
 shopt -s inherit_errexit
 export LC_ALL=C
@@ -144,11 +145,19 @@ print_commit_advice() {
   echo "list incompatible changes."
 }
 
+# pin_version: pins $version in $script and keeps the release it replaces.
+pin_version() {
+  if [[ $version != "$NIX_VERSION" ]]; then
+    script=$(with_pin PREVIOUS_NIX_VERSION "$NIX_VERSION" <<<"$script")
+  fi
+  script=$(with_pin NIX_VERSION "$version" <<<"$script")
+}
+
 script=$(<"$versions")
 for system in "${SYSTEMS[@]}"; do
   check_system "$system"
 done
-script=$(with_pin NIX_VERSION "$version" <<<"$script")
+pin_version
 
 printf '%s\n' "$script" >"$work/versions.sh"
 if cmp -s "$work/versions.sh" "$versions"; then
