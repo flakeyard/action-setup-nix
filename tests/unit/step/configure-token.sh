@@ -19,3 +19,7 @@ echo "accept-flake-config = true" >"$work/home/.config/nix/nix.conf"
 run "token: does not overwrite a conf it did not write" fail step/configure-token.sh TOKEN=ghs_abc
 expect file "$work/home/.config/nix/nix.conf" "accept-flake-config = true"
 finish
+
+setup
+run_with_job_path "token: no tools of the job PATH" configure-token TOKEN=ghs_abc
+finish

@@ -4,7 +4,8 @@
 #
 # Inputs (environment): SUBSTITUTERS, KEYS.
 set -euo pipefail
-here=$(dirname -- "${BASH_SOURCE[0]}")
+# Builtins only until env.sh replaces PATH.
+here=${BASH_SOURCE[0]%/*}
 # shellcheck source-path=SCRIPTDIR source=env.sh
 source "$here/env.sh"
 # shellcheck source-path=SCRIPTDIR source=text.sh

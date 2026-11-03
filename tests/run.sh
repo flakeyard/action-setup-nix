@@ -11,6 +11,8 @@ source "$root/tests/harness/action.sh"
 source "$root/tests/harness/tarball.sh"
 # shellcheck source-path=SCRIPTDIR source=harness/case.sh
 source "$root/tests/harness/case.sh"
+# shellcheck source-path=SCRIPTDIR source=harness/job-path.sh
+source "$root/tests/harness/job-path.sh"
 
 # shellcheck source-path=SCRIPTDIR source=unit/step/check.sh
 source "$root/tests/unit/step/check.sh"

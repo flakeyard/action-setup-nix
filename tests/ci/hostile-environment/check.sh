@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Checks an installation in a job whose environment tries to change it:
-# BASH_ENV, exported functions, SHELLOPTS with PS4, fake tools first on PATH
-# and NIX_* variables of the installer.
+# BASH_ENV, exported functions, SHELLOPTS with PS4, fake tools first on PATH,
+# bash and env too, and NIX_* variables of the installer. Run it with
+# /usr/bin/bash.
 set -euo pipefail
 fail() {
   printf '::error::%s\n' "$1"
