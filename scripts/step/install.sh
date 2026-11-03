@@ -22,8 +22,8 @@ work=$(mktemp -d "$RUNNER_TEMP/setup-nix.XXXXXX")
 trap 'rm -rf -- "$work"' EXIT
 
 echo "Downloading $url"
-curl --proto '=https' --tlsv1.2 --fail --silent --show-error --location \
-  --retry 3 --connect-timeout 20 --max-time 600 \
+curl --proto '=https' --proto-redir '=https' --tlsv1.2 --fail --silent \
+  --show-error --location --retry 3 --connect-timeout 20 --max-time 600 \
   --output "$work/nix.tar.xz" "$url"
 
 actual=$(sha256sum "$work/nix.tar.xz")

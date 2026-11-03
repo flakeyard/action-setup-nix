@@ -12,7 +12,8 @@ shopt -s inherit_errexit
 export LC_ALL=C
 
 SYSTEMS=(x86_64-linux aarch64-linux)
-CURL=(curl --proto '=https' --fail --silent --show-error --location --retry 3)
+CURL=(curl --proto '=https' --proto-redir '=https' --tlsv1.2 --fail --silent
+  --show-error --location --retry 3)
 VERSION_RE='^[0-9]+\.[0-9]+\.[0-9]+$'
 
 version=${1:?usage: scripts/update/nix.sh VERSION}

@@ -42,7 +42,17 @@ NUMBER_RE = re.compile(r"[0-9]{1,12}")
 # The DER SubjectPublicKeyInfo of an Ed25519 key, before the 32 key bytes.
 ED25519_DER_PREFIX = bytes.fromhex("302a300506032b6570032100")
 
-CURL = ["curl", "--proto", "=https", "--silent", "--show-error", "--retry", "3"]
+# Without --location, a redirect fails the check.
+CURL = [
+    "curl",
+    "--proto",
+    "=https",
+    "--tlsv1.2",
+    "--silent",
+    "--show-error",
+    "--retry",
+    "3",
+]
 HTTP_OK = "200"
 
 

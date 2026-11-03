@@ -19,7 +19,8 @@ sed -i -e "s/^NIX_VERSION=.*/NIX_VERSION=$previous/" \
 # scripts/update/nix.sh checks the previous tarballs against these hashes
 # before it compares their installer scripts.
 for system in x86_64-linux aarch64-linux; do
-  hash=$(curl --proto '=https' --fail --silent --show-error --location --retry 3 \
+  hash=$(curl --proto '=https' --proto-redir '=https' --tlsv1.2 --fail --silent \
+    --show-error --location --retry 3 \
     "$NIX_BASE_URL/nix-$previous/nix-$previous-$system.tar.xz.sha256")
   [[ $hash =~ ^[0-9a-f]{64}$ ]] || {
     echo "::error::Invalid published SHA-256 of Nix $previous for $system: $hash"
