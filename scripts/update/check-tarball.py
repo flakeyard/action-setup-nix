@@ -150,6 +150,12 @@ def nar_hash(path: Path) -> tuple[str, int]:
 # --- .reginfo -----------------------------------------------------------------
 
 
+def read_text(file: Path) -> str:
+    """The text of file with its line ends as they are, like Nix reads it, and
+    bytes that are not UTF-8 kept as surrogates."""
+    return file.read_bytes().decode(errors="surrogateescape")
+
+
 @dataclasses.dataclass(frozen=True)
 class RegInfoEntry:
     """A store path as .reginfo lists it. Sizes stay strings, as in narinfo."""
@@ -176,6 +182,13 @@ class Lines:
         self.next += 1
         return self.lines[self.next - 1]
 
+    def read_field(self, path: str) -> str:
+        """The next line, a field of the entry of path."""
+        line = self.read()
+        if line is None:
+            raise CheckError(f"truncated .reginfo after {path}")
+        return line
+
 
 def store_name(path: str) -> str | None:
     match = STORE_PATH_RE.fullmatch(path)
@@ -186,10 +199,7 @@ def read_entry(path: str, lines: Lines) -> RegInfoEntry:
     """The entry of path: NAR hash, NAR size, deriver, number of references
     and the references. Every field is checked before it is used: the tarball
     is not trusted yet."""
-    fields = [lines.read() for _ in range(4)]
-    if None in fields:
-        raise CheckError(f"truncated .reginfo after {path}")
-    hash_, size, _deriver, count = fields
+    hash_, size, _deriver, count = [lines.read_field(path) for _ in range(4)]
     name = store_name(path)
     if name is None:
         raise CheckError(f"invalid store path in .reginfo: {path}")
@@ -212,7 +222,7 @@ def read_reference(path: str, lines: Lines) -> str:
 
 
 def read_reginfo(file: Path) -> list[RegInfoEntry]:
-    lines = Lines(file.read_text(errors="surrogateescape"))
+    lines = Lines(read_text(file))
     entries: list[RegInfoEntry] = []
     names: set[str] = set()
     while (path := lines.read()) is not None:
@@ -255,9 +265,9 @@ def is_visible_dir(path: Path) -> bool:
 def check_contents(store: Path, entries: list[RegInfoEntry]) -> None:
     """The store holds exactly the entries, with their NAR hashes and sizes."""
     listed = {entry.name for entry in entries}
-    for entry in os.listdir(store):
-        if entry not in listed:
-            raise CheckError(f"store/{entry} is not listed in .reginfo")
+    for name in os.listdir(store):
+        if name not in listed:
+            raise CheckError(f"store/{name} is not listed in .reginfo")
     for entry in entries:
         contents = store / entry.name
         if not (contents.exists() or contents.is_symlink()):
@@ -290,8 +300,11 @@ class NarInfo:
         values = self.fields.get(key, [])
         return values[0] if len(values) == 1 else None
 
-    def references(self) -> list[str]:
-        return " ".join(self.fields.get("References", [])).split()
+    def references(self) -> list[str] | None:
+        """The references, or None when the field appears more than once,
+        which Nix rejects too."""
+        values = self.fields.get("References", [""])
+        return values[0].split() if len(values) == 1 else None
 
     def signatures(self) -> list[str]:
         return self.fields.get("Sig", [])
@@ -314,21 +327,24 @@ def fetch_narinfos(entries: list[RegInfoEntry], work: Path) -> list[NarInfo]:
     for entry, code in zip(entries, codes):
         if code != HTTP_OK:
             raise CheckError(f"{CACHE_URL} returned HTTP {code} for {entry.path}")
-    return [NarInfo.parse(file.read_text(errors="surrogateescape")) for file in files]
+    return [NarInfo.parse(read_text(file)) for file in files]
 
 
 def matches(entry: RegInfoEntry, info: NarInfo) -> bool:
+    references = info.references()
     return (
         info.value("StorePath") == entry.path
         and info.value("NarHash") == entry.nar_hash
         and info.value("NarSize") == entry.nar_size
-        and sorted(info.references()) == sorted(entry.references)
+        and references is not None
+        and sorted(references) == sorted(entry.references)
     )
 
 
-def fingerprint(entry: RegInfoEntry, info: NarInfo) -> bytes:
-    """What the cache signs, with the references in the order it lists them."""
-    references = ",".join(f"{STORE_DIR}/{ref}" for ref in info.references())
+def fingerprint(entry: RegInfoEntry) -> bytes:
+    """What the cache signs for a matching entry, with the references sorted,
+    as Nix keeps them."""
+    references = ",".join(f"{STORE_DIR}/{ref}" for ref in sorted(entry.references))
     return f"1;{entry.path};{entry.nar_hash};{entry.nar_size};{references}".encode()
 
 
@@ -367,7 +383,7 @@ def check_cache(entries: list[RegInfoEntry], work: Path) -> None:
     for entry, info in zip(entries, fetch_narinfos(entries, work)):
         if not matches(entry, info):
             raise CheckError(f"{entry.path} in the tarball differs from {CACHE_URL}")
-        if not verifier.signed(fingerprint(entry, info), info.signatures()):
+        if not verifier.signed(fingerprint(entry), info.signatures()):
             raise CheckError(f"no valid signature of {verifier.name} for {entry.path}")
 
 
