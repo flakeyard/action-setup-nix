@@ -3,9 +3,9 @@
 # the URL>, into the file given by its --output, in order, or on stdout. A
 # missing file is HTTP 404: with --fail, an error like curl's; with --write-out,
 # whose %{http_code} and \n are replaced after each URL, the code. Each URL is
-# appended to $CALLS.
+# appended to $CALLS. Like the scripts must, it follows redirects only to https.
 set -euo pipefail
-urls=() outputs=() fail=false write_out=""
+urls=() outputs=() fail=false write_out="" location=false proto_redir=""
 while (($#)); do
   case $1 in
     --output)
@@ -16,10 +16,15 @@ while (($#)); do
       write_out=$2
       shift 2
       ;;
+    --proto-redir)
+      proto_redir=$2
+      shift 2
+      ;;
     --proto | --retry | --connect-timeout | --max-time)
       shift 2
       ;;
     --fail) fail=true && shift ;;
+    --location) location=true && shift ;;
     -*) shift ;;
     *)
       urls+=("$1")
@@ -27,6 +32,11 @@ while (($#)); do
       ;;
   esac
 done
+
+if $location && [[ $proto_redir != =https ]]; then
+  echo "curl stub: --location without --proto-redir =https" >&2
+  exit 2
+fi
 
 # answer URL OUTPUT: serves one URL; OUTPUT is empty for stdout.
 answer() {
