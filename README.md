@@ -147,8 +147,9 @@ To update Nix, run `scripts/update/nix.sh VERSION`; it needs `curl`, `openssl`,
 Only when every system passed, it writes `versions.sh` and the version in this
 README. Commit the change as `fix(deps):` for a new patch version and as
 `feat(deps):` for a new minor version. On every pull request and every week, the
-CI runs these checks for the pinned version and updates a copy from the previous
-Nix release, which must reproduce `versions.sh` and this README.
+CI runs these checks for the pinned version and updates a copy from the release
+it replaced, `PREVIOUS_NIX_VERSION` in `versions.sh`, which must reproduce
+`versions.sh` and this README.
 
 Layout: `scripts/step/` holds one script per step of `action.yml`, which runs
 them through `scripts/run-step.sh`; `scripts/lib/` holds what the steps share
