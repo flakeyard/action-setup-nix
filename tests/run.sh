@@ -30,10 +30,6 @@ source "$root/tests/unit/update/check-tarball.sh"
 source "$root/tests/unit/update/nix.sh"
 # shellcheck source-path=SCRIPTDIR source=unit/run-step.sh
 source "$root/tests/unit/run-step.sh"
-# shellcheck source-path=SCRIPTDIR source=unit/github/required.sh
-source "$root/tests/unit/github/required.sh"
-# shellcheck source-path=SCRIPTDIR source=unit/github/commit-status.sh
-source "$root/tests/unit/github/commit-status.sh"
 
 echo "passed: $passed, failed: $failed"
 ((failed == 0))

@@ -57,10 +57,3 @@ reset_records() {
   : >"$work/output"
   : >"$work/path"
 }
-
-# github_setup: setup, with the scripts of .github/scripts in
-# $action/scripts/github.
-github_setup() {
-  setup
-  cp -R "$root/.github/scripts" "$action/scripts/github"
-}

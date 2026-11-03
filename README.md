@@ -1,5 +1,7 @@
 # action-setup-nix
 
+[![OpenSSF Scorecard][scorecard-badge]][scorecard-viewer]
+
 A GitHub Action that installs Nix on GitHub-hosted Linux runners: a pinned
 release of [Nix][nix], verified by its SHA-256, in multi-user mode with the
 sandbox on and only the binary caches you name.
@@ -153,28 +155,36 @@ Tests: `tests/run.sh` runs the unit tests of the scripts in `tests/unit/`, which
 mirrors `scripts/`, with the helpers in `tests/harness/`; `tests/ci/<job>/`
 holds the checks that a job of the CI runs on real runners after the action.
 
+CI: [`test.yaml`](.github/workflows/test.yaml) runs the unit tests and the
+action on the supported runners and ends with [workflow-check][workflow-check],
+which checks the pull request title and `renovate.json` and reports
+`check / required` over every job.
+[`scorecard.yaml`](.github/workflows/scorecard.yaml) runs OpenSSF Scorecard with
+[workflow-scorecard][workflow-scorecard]. Releases go through
+[`release.yaml`](.github/workflows/release.yaml), whose release pull requests
+are checked by a dispatched run of `test.yaml`.
+
 ## Bootstrap
 
 This repository is bootstrapped under [FY-0022][fy-0022]. Until their providers
 are released:
 
 - actionlint, zizmor, shellcheck, shfmt, Prettier and the other checks of the
-  atoms run locally before every pull request (provider: `workflow-check` and
-  the atoms);
-- pull request titles are checked by the reviewer (provider: `workflow-check`);
-- rulesets require no status checks (provider: `workflow-check`);
-- the jobs `pending` and `required` of `.github/workflows/test.yaml` and
-  `.github/scripts/` are a copy shared with the other bootstrapped repositories
-  (provider: `workflow-check`);
-- CI does not check that the tag of the preset in `renovate.json` belongs to an
-  immutable release ([FY-0028][fy-0028]) (provider: `workflow-check`);
-- OpenSSF Scorecard is not run (provider: `workflow-check`).
+  atoms run locally before every pull request (provider: the atoms);
+- rulesets require no status checks until every repository has adopted
+  `workflow-check` (provider: `workflow-check`).
 
 ## License
 
 [MIT](LICENSE).
 
 [nix]: https://github.com/NixOS/nix
+[scorecard-badge]:
+  https://api.scorecard.dev/projects/github.com/flakeyard/action-setup-nix/badge
+[scorecard-viewer]:
+  https://scorecard.dev/viewer/?uri=github.com/flakeyard/action-setup-nix
 [versioning]: https://github.com/flakeyard/.github/blob/main/VERSIONING.md
-[fy-0022]: https://github.com/flakeyard/decisions/blob/main/docs/adr/records/0022-bootstrap.md
-[fy-0028]: https://github.com/flakeyard/decisions/blob/main/docs/adr/records/0028-supply-chain.md
+[workflow-check]: https://github.com/flakeyard/workflow-check
+[workflow-scorecard]: https://github.com/flakeyard/workflow-scorecard
+[fy-0022]:
+  https://github.com/flakeyard/decisions/blob/main/docs/adr/records/0022-bootstrap.md
