@@ -20,7 +20,7 @@ inputs:
     default: ${{ github.token }}
 outputs:
   nix-version:
-    description: Installed Nix version, such as 2.35.4.
+    description: Installed Nix version, as X.Y.Z.
     value: ${{ steps.verify.outputs.nix-version }}
 # Steps use the runner's bash in privileged mode (-p), which reads no BASH_ENV
 # and imports no functions or shell options, and run-step.sh gives the scripts

@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@<commit> # v7.0.1
         with:
           persist-credentials: false
-      - uses: flakeyard/action-setup-nix@<commit> # v0.1.0
+      - uses: flakeyard/action-setup-nix@<commit> # vX.Y.Z
       - run: nix flake check
 ```
 
@@ -26,7 +26,7 @@ Reference the action by full commit SHA, as above. To use a binary cache besides
 `cache.nixos.org`, name it and its key:
 
 ```yaml
-- uses: flakeyard/action-setup-nix@<commit> # v0.1.0
+- uses: flakeyard/action-setup-nix@<commit> # vX.Y.Z
   with:
     extra-substituters: https://flakeyard.cachix.org
     extra-trusted-public-keys: flakeyard.cachix.org-1:WxHxE1HWLr67hdqhOBRrfWAM408yL6SM3g9++ZaaSzg=
@@ -49,7 +49,8 @@ Reference the action by full commit SHA, as above. To use a binary cache besides
 
 ## Outputs
 
-- `nix-version`: the installed Nix version, such as `2.35.4`.
+- `nix-version`: the installed Nix version, as `X.Y.Z`; see
+  [Behaviour](#behaviour).
 
 ## Behaviour
 
