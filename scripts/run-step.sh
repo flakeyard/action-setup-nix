@@ -4,8 +4,10 @@
 # Runs step/STEP.sh, the script of one step of the action, with only the
 # variables the scripts read. Earlier steps can set any variable for the rest
 # of the job, such as exported functions (BASH_FUNC_name%%) that replace
-# commands, SHELLOPTS and PS4 that run code, or LD_PRELOAD. bash -p imports no
-# functions, SHELLOPTS or BASHOPTS and reads no BASH_ENV, here and in the step.
+# commands, or SHELLOPTS and PS4 that run code. bash -p imports no functions,
+# SHELLOPTS or BASHOPTS and reads no BASH_ENV, here and in the step. Variables
+# of the dynamic loader, such as LD_PRELOAD, are not covered: the loader reads
+# them when the first bash of the step starts, before this script.
 set -euo pipefail
 
 # The inputs of the steps, the runner's variables and the user's. PATH is the

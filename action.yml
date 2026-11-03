@@ -25,7 +25,8 @@ outputs:
 # Steps use the runner's bash in privileged mode (-p), which reads no BASH_ENV
 # and imports no functions or shell options, and run-step.sh gives the scripts
 # only the variables they read, so that earlier steps of the job cannot inject
-# code through the environment.
+# code through them. Variables of the dynamic loader, such as LD_PRELOAD, still
+# reach the first bash of every step: GitHub does not block them.
 runs:
   using: composite
   steps:

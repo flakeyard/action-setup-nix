@@ -7,7 +7,7 @@ hostile_vars=(
   'BASH_FUNC_printf%%=() { builtin echo INJECTED; }'
   'BASH_FUNC_cat%%=() { builtin echo INJECTED; }'
   SHELLOPTS=xtrace 'PS4=$(builtin echo PS4-RAN >&2)' BASHOPTS=extdebug
-  BASH_ENV=/dev/null NIX_CONFIG="sandbox = false" LD_PRELOAD=
+  BASH_ENV=/dev/null NIX_CONFIG="sandbox = false"
 )
 
 # step_setup: as-action.sh, which runs run-step.sh like the steps of
@@ -41,7 +41,16 @@ expect no-message "INJECTED"
 expect no-message "PS4-RAN"
 expect no-message "BASH_FUNC_"
 expect no-message "NIX_CONFIG"
-expect no-message "LD_PRELOAD"
+finish
+
+# The loader reads its variables when the first bash of a step starts, before
+# run-step.sh: they reach that process, but not the scripts.
+probe_setup
+run "run-step: loader variables reach only the first process" ok as-action.sh \
+  LD_PRELOAD=/nonexistent/preload.so LD_LIBRARY_PATH=/nonexistent -- probe
+expect message "from LD_PRELOAD cannot be preloaded"
+[[ -z $current ]] || ! grep -E '^LD_' "$work/stdout" ||
+  report "the step got variables of the loader"
 finish
 
 probe_setup
