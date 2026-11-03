@@ -170,9 +170,7 @@ This repository is bootstrapped under [FY-0022][fy-0022]. Until their providers
 are released:
 
 - actionlint, zizmor, shellcheck, shfmt, Prettier and the other checks of the
-  atoms run locally before every pull request (provider: the atoms);
-- rulesets require no status checks until every repository has adopted
-  `workflow-check` (provider: `workflow-check`).
+  atoms run locally before every pull request (provider: the atoms).
 
 ## License
 
