@@ -77,10 +77,40 @@ run "run-step: only steps of the action" fail as-action.sh -- ../versions
 expect message "invalid step name '../versions'"
 finish
 
+# action_steps: prints the shell and the run of each step of action.yml,
+# separated by a tab, with a run folded over several lines joined.
+action_steps() {
+  awk '
+    function flush() { if (in_step) print shell "\t" run }
+    /^    - / { flush(); in_step = 1; shell = run = key = ""; sub(/^    - /, "      ") }
+    in_step && /^      [a-z-]+:/ {
+      key = $1; value = $0; sub(/^      [a-z-]+: */, "", value)
+      if (key == "shell:") shell = value
+      if (key == "run:") run = value
+      next
+    }
+    in_step && key == "run:" && /^        / {
+      line = $0; sub(/^ +/, "", line); run = run (run == "" ? "" : " ") line
+    }
+    END { flush() }
+  ' "$root/action.yml"
+}
+
+STEP_SHELL='/usr/bin/bash --noprofile --norc -p -e -o pipefail {0}'
+STEP_RUN_RE='^/usr/bin/bash -p "\$GITHUB_ACTION_PATH/scripts/run-step.sh" [a-z-]+$'
+UNSUPPORTED_OS_RUN='bash "$GITHUB_ACTION_PATH/scripts/step/unsupported-os.sh"'
+
 setup
-step_lines=$(grep -cxF -- '      shell: /usr/bin/bash --noprofile --norc -p -e -o pipefail {0}' "$root/action.yml")
-run_lines=$(grep -cE '^      run: /usr/bin/bash -p "\$GITHUB_ACTION_PATH/scripts/run-step.sh" [a-z-]+$' "$root/action.yml")
 current="run-step: every Linux step of action.yml uses it"
-[[ $step_lines == 4 && $run_lines == 4 ]] ||
-  report "$step_lines steps with bash -p, $run_lines through run-step.sh, expected 4"
+linux_steps=0
+while IFS=$'\t' read -r shell command; do
+  if [[ $shell == bash && $command == "$UNSUPPORTED_OS_RUN" ]]; then
+    continue
+  elif [[ $shell == "$STEP_SHELL" && $command =~ $STEP_RUN_RE ]]; then
+    linux_steps=$((linux_steps + 1))
+  else
+    report "a step does not use run-step.sh: shell '$shell', run '$command'"
+  fi
+done < <(action_steps)
+((linux_steps == 4)) || report "$linux_steps steps through run-step.sh, expected 4"
 finish
