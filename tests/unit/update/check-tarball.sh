@@ -38,14 +38,15 @@ reginfo_entry() {
   return 0
 }
 
-# narinfo NAME [REFERENCE...]: a signed narinfo of a store path in the cache.
+# narinfo NAME [REFERENCE...]: a signed narinfo of a store path in the cache,
+# with the references in the given order. Like Nix, it signs them sorted.
 narinfo() {
   local name=$1 hash size fingerprint refs
   shift
   read -r hash size < <("$root/scripts/update/check-tarball.py" --nar-hash "$release/store/$name")
   refs=""
-  (($#)) && refs=$(printf '/nix/store/%s,' "$@")
-  fingerprint="1;/nix/store/$name;$hash;$size;${refs%,}"
+  (($#)) && refs=$(printf '/nix/store/%s\n' "$@" | sort | paste -sd,)
+  fingerprint="1;/nix/store/$name;$hash;$size;$refs"
   printf '%s' "$fingerprint" >"$work/fingerprint"
   openssl pkeyutl -sign -inkey "${sign_with:-$signing_key}" -rawin \
     -in "$work/fingerprint" -out "$work/sig"
@@ -56,6 +57,11 @@ narinfo() {
     echo "References: $*"
     echo "Sig: ${test_key%%:*}:$(base64 -w0 <"$work/sig")"
   } >"$work/fixtures/${name%%-*}.narinfo"
+}
+
+# narinfo_file NAME: prints the path of the narinfo of a store path.
+narinfo_file() {
+  echo "$work/fixtures/${1%%-*}.narinfo"
 }
 
 pack() {
@@ -127,6 +133,48 @@ reginfo_entry "$nix" "${dep%.0}.?" >>"$release/.reginfo"
 pack
 run "check-tarball: references are not patterns" fail update/check-tarball.py -- "$work/release.tar.xz"
 expect message "error: /nix/store/$nix in the tarball differs from https://example.test/cache"
+finish
+
+release_setup
+lib=$(printf 'c%.0s' {1..32})-lib-2.0
+mkdir -p "$release/store/$lib"
+echo lib >"$release/store/$lib/lib"
+reginfo_entry "$dep" >"$release/.reginfo"
+reginfo_entry "$lib" >>"$release/.reginfo"
+reginfo_entry "$nix" "$dep" "$lib" >>"$release/.reginfo"
+narinfo "$lib"
+narinfo "$nix" "$lib" "$dep"
+pack
+run "check-tarball: references in another order" ok update/check-tarball.py -- "$work/release.tar.xz"
+expect message "3 store paths match"
+finish
+
+release_setup
+sed -i "s|^References: .*|References: \nReferences: $dep|" "$(narinfo_file "$nix")"
+pack
+run "check-tarball: References twice" fail update/check-tarball.py -- "$work/release.tar.xz"
+expect message "error: /nix/store/$nix in the tarball differs from https://example.test/cache"
+finish
+
+release_setup
+sed -i "s|^StorePath: .*|&\n&|" "$(narinfo_file "$nix")"
+pack
+run "check-tarball: StorePath twice" fail update/check-tarball.py -- "$work/release.tar.xz"
+expect message "error: /nix/store/$nix in the tarball differs from https://example.test/cache"
+finish
+
+release_setup
+sed -i "s|^NarSize: |&0|" "$(narinfo_file "$nix")"
+pack
+run "check-tarball: NarSize with a leading zero" fail update/check-tarball.py -- "$work/release.tar.xz"
+expect message "error: /nix/store/$nix in the tarball differs from https://example.test/cache"
+finish
+
+release_setup
+sed -i 's/$/\r/' "$release/.reginfo"
+pack
+run "check-tarball: .reginfo with CRLF" fail update/check-tarball.py -- "$work/release.tar.xz"
+expect message "error: invalid store path in .reginfo"
 finish
 
 setup
