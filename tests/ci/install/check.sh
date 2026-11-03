@@ -48,18 +48,21 @@ if sh tests/ci/install/fixture/no-network.sh; then
 fi
 echo "::endgroup::"
 
-# Nix 2.35.3 from its fallback-paths.nix: in cache.nixos.org, but not installed.
-case $(uname -m) in
-  x86_64) path=/nix/store/h0klnxidg8az3lpvc2ksan1kk05jkzbk-nix-2.35.3 ;;
-  aarch64) path=/nix/store/km1j517ydr6m16qcg0kvm7xc086jhifj-nix-2.35.3 ;;
-esac
+# The release that the pinned one replaced, from its fallback-paths.nix: in
+# cache.nixos.org, but not installed. Read, not sourced: NIX_VERSION here is
+# the output of the action.
+previous=$(sed -n 's/^PREVIOUS_NIX_VERSION=//p' versions.sh)
+fallback_paths=https://releases.nixos.org/nix/nix-$previous/fallback-paths.nix
+path=$(nix eval --raw --impure --expr \
+  "(import (builtins.fetchurl \"$fallback_paths\")).$(nix config show system)") ||
+  fail "No store path of Nix $previous in $fallback_paths."
 echo "::group::Substitution of $path"
 nix-store --realise "$path" || fail "$path was not substituted from cache.nixos.org."
 nix path-info --sigs "$path"
 echo "::endgroup::"
 
 echo "::group::Fetching from GitHub with the token"
-nix flake metadata --no-update-lock-file github:NixOS/nix/2.35.4 ||
+nix flake metadata --no-update-lock-file "github:NixOS/nix/$NIX_VERSION" ||
   fail "Fetching a flake from GitHub failed."
 echo "::endgroup::"
 
