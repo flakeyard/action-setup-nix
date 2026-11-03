@@ -16,6 +16,6 @@ SYSTEM_PATH=/usr/sbin:/usr/bin:/sbin:/bin
 JOB_PATH=${PATH-}
 export PATH=$SYSTEM_PATH LC_ALL=C
 
-ACTION_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
+ACTION_DIR=$(cd -- "${BASH_SOURCE[0]%/*}/../.." && pwd)
 # shellcheck source-path=SCRIPTDIR source=../../versions.sh
 source "$ACTION_DIR/versions.sh"

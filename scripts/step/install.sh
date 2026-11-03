@@ -5,7 +5,8 @@
 # Inputs (environment): SUBSTITUTERS, KEYS, RUNNER_ARCH, RUNNER_TEMP,
 # GITHUB_PATH.
 set -euo pipefail
-lib=$(dirname -- "${BASH_SOURCE[0]}")/../lib
+# Builtins only until lib/env.sh replaces PATH, which is the job's.
+lib=${BASH_SOURCE[0]%/*}/../lib
 # shellcheck source-path=SCRIPTDIR source=../lib/env.sh
 source "$lib/env.sh"
 # shellcheck source-path=SCRIPTDIR source=../lib/runner.sh

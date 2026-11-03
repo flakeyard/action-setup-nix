@@ -9,7 +9,8 @@
 set -euo pipefail
 
 # The inputs of the steps, the runner's variables and the user's. PATH is the
-# job's, for step/check.sh; lib/env.sh replaces it.
+# job's, for step/check.sh; lib/env.sh replaces it, and the steps run only
+# builtins before.
 ALLOWED_VARS=(
   SUBSTITUTERS KEYS TOKEN
   RUNNER_OS RUNNER_ARCH RUNNER_ENVIRONMENT RUNNER_TEMP

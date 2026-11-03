@@ -65,3 +65,9 @@ rm "$fs/etc/nix/nix.conf"
 run "verify: no nix.conf" fail step/verify.sh
 expect message "::error::$fs/etc/nix/nix.conf was not installed."
 finish
+
+setup
+install "verify: no tools of the job PATH"
+run_with_job_path "verify: no tools of the job PATH" verify
+expect output "nix-version=$NIX_VERSION"
+finish

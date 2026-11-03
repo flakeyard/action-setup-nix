@@ -139,14 +139,17 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Export functions and shell options
+        run: tests/ci/hostile-environment/github-env.sh
+      # Last before the action: bash and env on PATH are fakes from here on.
       - name: Put fake tools first on PATH
         run:
           echo "$GITHUB_WORKSPACE/tests/ci/hostile-environment/bin"
           >>"$GITHUB_PATH"
-      - name: Export functions and shell options
-        run: tests/ci/hostile-environment/github-env.sh
       - uses: $/
-      - run: tests/ci/hostile-environment/check.sh
+      - name: Check the installation
+        shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+        run: /usr/bin/bash tests/ci/hostile-environment/check.sh
 
   rejected:
     name: Reject ${{ matrix.case }}

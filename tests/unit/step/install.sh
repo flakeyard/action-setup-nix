@@ -51,3 +51,8 @@ expect message "::error::The Nix installer failed"
 [[ -z $current || ! -s $work/path ]] || report "PATH was extended: $(cat "$work/path")"
 [[ -z $current || -z $(ls -A "$work/temp") ]] || report "temporary files left"
 finish
+
+setup
+run_with_job_path "install: no tools of the job PATH" install
+expect path "$fs/nix/var/nix/profiles/default/bin"
+finish

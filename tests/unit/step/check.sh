@@ -201,3 +201,9 @@ for leftover in etc/xdg/nix etc/systemd/system/nix-daemon.service etc/bashrc.bac
   expect message "found: /$leftover"
   finish
 done
+
+# --- job PATH -----------------------------------------------------
+
+setup
+run_with_job_path "check: no tools of the job PATH" check
+finish
