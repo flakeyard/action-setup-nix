@@ -60,7 +60,10 @@ Reference the action by full commit SHA, as above. To use a binary cache besides
   tools, without `BASH_ENV`, exported functions or shell options of the job, and
   its scripts get only the variables they read. The official installer runs in
   daemon mode with a reduced environment. So `PATH`, `NIX_*` and other variables
-  of the job do not change the version, the source or the installation. Steps
+  of the job do not change the version, the source or the installation. This
+  does not cover the variables of the dynamic loader, such as `LD_PRELOAD` and
+  `LD_LIBRARY_PATH`: GitHub does not block them, and the loader reads them when
+  the first `bash` of each step starts, before the action can drop them. Steps
   that run before the action can still change anything on the runner, through
   `sudo` too. Later steps can rely on:
   - `nix` on `PATH`, from `/nix/var/nix/profiles/default/bin`;
