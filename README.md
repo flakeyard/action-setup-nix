@@ -127,10 +127,11 @@ build users have no access to it, so tests that start virtual machines fail.
 
 ## Versioning
 
-The Nix version is part of the public API. A new patch version of Nix is a patch
-release of the action and a new minor version a minor release; a Nix release
-whose release notes list incompatible changes is a major release. See
-[VERSIONING][versioning].
+The Nix version is part of the public API, which
+[ADR-0001](docs/adr/records/0001-set-up-nix-on-ci-runners.md) lists. A new patch
+version of Nix is a patch release of the action and a new minor version a minor
+release; a Nix release whose release notes list incompatible changes is a major
+release. See [VERSIONING][versioning].
 
 ## Maintenance
 
