@@ -6,9 +6,10 @@
 
 _None._
 
-## Accepted (0)
+## Accepted (1)
 
-_None._
+- [ADR-0001](records/0001-set-up-nix-on-ci-runners.md) Set up Nix on CI runners
+  (2026-11-05)
 
 ## Rejected (0)
 
