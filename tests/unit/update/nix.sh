@@ -6,7 +6,7 @@
 publish_hash() {
   local tarball
   tarball=$(tarball_fixture "$@")
-  sha256_of "$tarball" >"$tarball.sha256"
+  fixture_sha256 "$tarball" >"$tarball.sha256"
 }
 
 # update_setup: releases $NIX_VERSION (pinned) and 9.0.0 of both systems, and a
@@ -16,7 +16,7 @@ update_setup() {
   local system
   fake_tarball "$NIX_VERSION" aarch64-linux
   pin_tarball "$NIX_VERSION" aarch64-linux
-  for system in x86_64-linux aarch64-linux; do
+  for system in "${SYSTEMS[@]}"; do
     fake_tarball 9.0.0 "$system"
     publish_hash "$NIX_VERSION" "$system"
     publish_hash 9.0.0 "$system"

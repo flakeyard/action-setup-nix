@@ -11,23 +11,22 @@ lib=${BASH_SOURCE[0]%/*}/../lib
 source "$lib/env.sh"
 # shellcheck source-path=SCRIPTDIR source=../lib/runner.sh
 source "$lib/runner.sh"
+# shellcheck source-path=SCRIPTDIR source=../lib/tarball.sh
+source "$lib/tarball.sh"
 
 system=$(nix_system)
-hash_var=NIX_SHA256_${system//-/_}
-expected=${!hash_var}
-name=nix-$NIX_VERSION-$system
-url=$NIX_BASE_URL/nix-$NIX_VERSION/$name.tar.xz
+expected=$(pinned_sha256 "$system")
+name=$(tarball_name "$NIX_VERSION" "$system")
+url=$(tarball_url "$NIX_VERSION" "$system")
 
 work=$(mktemp -d "$RUNNER_TEMP/setup-nix.XXXXXX")
 trap 'rm -rf -- "$work"' EXIT
 
 echo "Downloading $url"
-curl --proto '=https' --proto-redir '=https' --tlsv1.2 --fail --silent \
-  --show-error --location --retry 3 --connect-timeout 20 --max-time 600 \
+"${HTTPS_CURL[@]}" --connect-timeout 20 --max-time 600 \
   --output "$work/nix.tar.xz" "$url"
 
-actual=$(sha256sum "$work/nix.tar.xz")
-actual=${actual%% *}
+actual=$(sha256_of "$work/nix.tar.xz")
 if [[ $actual != "$expected" ]]; then
   printf '::error::SHA-256 of %s is %s, expected %s; nothing was installed.\n' \
     "$url" "$actual" "$expected"

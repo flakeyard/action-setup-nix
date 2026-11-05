@@ -11,9 +11,6 @@ set -euo pipefail
 shopt -s inherit_errexit
 export LC_ALL=C
 
-SYSTEMS=(x86_64-linux aarch64-linux)
-CURL=(curl --proto '=https' --proto-redir '=https' --tlsv1.2 --fail --silent
-  --show-error --location --retry 3)
 VERSION_RE='^[0-9]+\.[0-9]+\.[0-9]+$'
 
 version=${1:?usage: scripts/update/nix.sh VERSION}
@@ -26,6 +23,8 @@ versions=$here/../../versions.sh
 readme=$here/../../README.md
 # shellcheck source-path=SCRIPTDIR source=../../versions.sh
 source "$versions"
+# shellcheck source-path=SCRIPTDIR source=../lib/tarball.sh
+source "$here/../lib/tarball.sh"
 
 work=$(mktemp -d)
 trap 'rm -rf -- "$work"' EXIT
@@ -35,12 +34,6 @@ fail() {
   exit 1
 }
 
-# tarball_url VERSION SYSTEM: prints the URL of a release tarball.
-tarball_url() {
-  local version=$1 system=$2
-  echo "$NIX_BASE_URL/nix-$version/nix-$version-$system.tar.xz"
-}
-
 # download VERSION SYSTEM: downloads a release tarball to $work and prints its
 # path.
 download() {
@@ -48,7 +41,7 @@ download() {
   url=$(tarball_url "$@")
   file=$work/${url##*/}
   echo "Downloading $url" >&2
-  "${CURL[@]}" --output "$file" "$url"
+  "${HTTPS_CURL[@]}" --output "$file" "$url"
   echo "$file"
 }
 
@@ -57,26 +50,7 @@ download() {
 published_sha256() {
   local url
   url=$(tarball_url "$@")
-  "${CURL[@]}" "$url.sha256"
-}
-
-# sha256_of FILE: prints the SHA-256 of FILE.
-sha256_of() {
-  local sum
-  sum=$(sha256sum -- "$1")
-  echo "${sum%% *}"
-}
-
-# pin_var SYSTEM: prints the name of the variable that pins the hash of SYSTEM.
-pin_var() {
-  echo "NIX_SHA256_${1//-/_}"
-}
-
-# pin_of SYSTEM: prints the pinned hash of the tarball for SYSTEM.
-pin_of() {
-  local var
-  var=$(pin_var "$1")
-  echo "${!var}"
+  "${HTTPS_CURL[@]}" "$url.sha256"
 }
 
 # with_pin NAME VALUE: prints versions.sh from stdin with NAME set to VALUE.
@@ -106,10 +80,11 @@ unpack_installer() {
 # show_installer_changes SYSTEM TARBALL: shows how the installer scripts of
 # TARBALL differ from those of the pinned release, which no signature covers.
 show_installer_changes() {
-  local system=$1 tarball=$2 pinned expected status=0
-  local old=nix-$NIX_VERSION-$system new=nix-$version-$system
+  local system=$1 tarball=$2 pinned expected old new status=0
+  old=$(tarball_name "$NIX_VERSION" "$system")
+  new=$(tarball_name "$version" "$system")
   pinned=$(download "$NIX_VERSION" "$system")
-  expected=$(pin_of "$system")
+  expected=$(pinned_sha256 "$system")
   check_tarball_hash "$pinned" "$expected" "the pinned tarball for $system" pinned
   unpack_installer "$pinned" "$work/old" "$old"
   unpack_installer "$tarball" "$work/new" "$new"

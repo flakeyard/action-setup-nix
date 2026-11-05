@@ -29,6 +29,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+# scripts/lib/, whose data files the action shares with this tool.
+LIB_DIR = Path(__file__).resolve().parent.parent / "lib"
 CACHE_URL = "https://cache.nixos.org"
 CACHE_KEY = "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
 
@@ -42,17 +44,9 @@ NUMBER_RE = re.compile(r"[0-9]{1,12}")
 # The DER SubjectPublicKeyInfo of an Ed25519 key, before the 32 key bytes.
 ED25519_DER_PREFIX = bytes.fromhex("302a300506032b6570032100")
 
-# Without --location, a redirect fails the check.
-CURL = [
-    "curl",
-    "--proto",
-    "=https",
-    "--tlsv1.2",
-    "--silent",
-    "--show-error",
-    "--retry",
-    "3",
-]
+# The curl arguments of the action, one per line, for https only. Without
+# --location, a redirect fails the check.
+CURL = ["curl", *(LIB_DIR / "https-curl-args").read_text().splitlines()]
 HTTP_OK = "200"
 
 
