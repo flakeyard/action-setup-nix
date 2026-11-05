@@ -14,13 +14,15 @@ source "$here/text.sh"
 substituters=() keys=()
 mapfile -t substituters < <(words "${SUBSTITUTERS-}")
 mapfile -t keys < <(words "${KEYS-}")
+# Shared with update/check-tarball.py, which checks the releases with it.
+cache_key=$(<"$here/cache-public-key")
 
-cat <<'EOF'
+cat <<EOF
 # Written by action-setup-nix.
 sandbox = true
 sandbox-fallback = false
 substituters = https://cache.nixos.org/
-trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+trusted-public-keys = $cache_key
 require-sigs = true
 accept-flake-config = false
 extra-experimental-features = nix-command flakes

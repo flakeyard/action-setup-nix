@@ -42,7 +42,7 @@ runs_on_host_with_systemd() {
 
 check_runner() {
   is_supported_runner ||
-    error "Unsupported runner ${RUNNER_OS-?}/${RUNNER_ARCH-?}: use a GitHub-hosted Linux runner on X64 or ARM64, such as ubuntu-24.04 or ubuntu-24.04-arm."
+    error "$(unsupported_runner "${RUNNER_OS-?}/${RUNNER_ARCH-?}")"
   [[ ${RUNNER_ENVIRONMENT-} == github-hosted ]] ||
     error "Only GitHub-hosted runners are supported, not '${RUNNER_ENVIRONMENT-}'."
   runs_on_host_with_systemd ||

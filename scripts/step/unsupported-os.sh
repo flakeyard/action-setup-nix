@@ -3,5 +3,9 @@
 # the action cannot even start: they use /usr/bin/bash.
 #
 # Inputs (environment): RUNNER_OS.
-echo "::error::Unsupported runner ${RUNNER_OS-?}: use a GitHub-hosted Linux runner on X64 or ARM64, such as ubuntu-24.04 or ubuntu-24.04-arm."
+# lib/runner.sh only defines functions, which also the bash of macOS and of
+# Windows runners reads.
+# shellcheck source-path=SCRIPTDIR source=../lib/runner.sh
+source "${BASH_SOURCE[0]%/*}/../lib/runner.sh"
+printf '::error::%s\n' "$(unsupported_runner "${RUNNER_OS-?}")"
 exit 1
