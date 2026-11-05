@@ -135,7 +135,6 @@ check_system() {
 }
 
 update_readme() {
-  [[ -f $readme ]] || return 0
   sed -i -e "s/This release installs Nix [0-9.]*[0-9]\./This release installs Nix $version./" "$readme"
 }
 
