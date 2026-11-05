@@ -14,10 +14,11 @@ source "$root/versions.sh"
 shared=$(mktemp -d)
 trap 'rm -rf -- "$shared"' EXIT
 
-# The tools the scripts use, without a nix the host may have.
+# The tools the scripts and the stubs use, without a nix the host may have;
+# touch for the tests that code from a tarball does not run.
 sysbin=$shared/bin
 mkdir "$sysbin"
-for tool in bash env sed grep cat cp mv rm mkdir mktemp dirname id stat chmod \
-  sha256sum tar xz cut ls touch python3 openssl base64 sort cmp diff jq paste; do
+for tool in bash env sed grep cat cp mv rm mkdir mktemp dirname id chmod \
+  sha256sum tar xz touch python3 openssl cmp diff; do
   ln -s "$(command -v "$tool")" "$sysbin/$tool"
 done
