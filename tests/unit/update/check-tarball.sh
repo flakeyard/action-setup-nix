@@ -13,7 +13,8 @@ nix=$(printf 'b%.0s' {1..32})-nix-9.0.0
 release_setup() {
   setup
   sed -i -e 's|^CACHE_URL = .*|CACHE_URL = "https://example.test/cache"|' \
-    -e "s|^CACHE_KEY = .*|CACHE_KEY = \"$test_key\"|" "$action/scripts/update/check-tarball.py"
+    "$action/scripts/update/check-tarball.py"
+  echo "$test_key" >"$action/scripts/lib/cache-public-key"
   release=$work/release/nix-9.0.0-x86_64-linux
   mkdir -p "$release/store/$dep/lib" "$release/store/$nix/bin"
   echo library >"$release/store/$dep/lib/libdep"

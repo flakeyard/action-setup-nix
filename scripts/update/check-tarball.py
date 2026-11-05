@@ -32,7 +32,7 @@ from pathlib import Path
 # scripts/lib/, whose data files the action shares with this tool.
 LIB_DIR = Path(__file__).resolve().parent.parent / "lib"
 CACHE_URL = "https://cache.nixos.org"
-CACHE_KEY = "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+CACHE_KEY = (LIB_DIR / "cache-public-key").read_text().strip()
 
 STORE_DIR = "/nix/store"
 # <hash>-<name> of a store path; the hash in Nix's base-32 alphabet.
