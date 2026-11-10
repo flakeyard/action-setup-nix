@@ -15,7 +15,7 @@ hostile_vars=(
 LIBRARY_STEP_RE='^flakeyard/action-shell-lib@[0-9a-f]{40} # v[0-9.]+$'
 LIBRARY_PATH='${{ steps.lib.outputs.path }}'
 
-setup
+setup_action
 run_step "action: functions do not replace commands of step/check.sh" fail check \
   "${hostile_vars[@]}" SUDO_FAILS=1
 expect message "::error::The installation needs passwordless sudo."

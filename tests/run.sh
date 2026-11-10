@@ -7,12 +7,17 @@ set -uo pipefail
 source "$(dirname -- "${BASH_SOURCE[0]}")/harness/env.sh"
 # shellcheck source-path=SCRIPTDIR source=harness/shell-lib.sh
 source "$root/tests/harness/shell-lib.sh"
+# The harness of the library; not its public API, used only by tests.
+# shellcheck source=/dev/null
+source "$library/internal/testing/case.sh"
+# shellcheck source=/dev/null
+source "$library/internal/testing/checks.sh"
+# shellcheck source-path=SCRIPTDIR source=harness/checks.sh
+source "$root/tests/harness/checks.sh"
 # shellcheck source-path=SCRIPTDIR source=harness/action.sh
 source "$root/tests/harness/action.sh"
 # shellcheck source-path=SCRIPTDIR source=harness/tarball.sh
 source "$root/tests/harness/tarball.sh"
-# shellcheck source-path=SCRIPTDIR source=harness/case.sh
-source "$root/tests/harness/case.sh"
 # shellcheck source-path=SCRIPTDIR source=harness/steps.sh
 source "$root/tests/harness/steps.sh"
 # shellcheck source-path=SCRIPTDIR source=harness/job-path.sh
@@ -35,5 +40,4 @@ source "$root/tests/unit/update/nix.sh"
 # shellcheck source-path=SCRIPTDIR source=unit/action.sh
 source "$root/tests/unit/action.sh"
 
-echo "passed: $passed, failed: $failed"
-((failed == 0))
+conclude

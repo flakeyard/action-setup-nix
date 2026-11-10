@@ -159,10 +159,11 @@ first step rejects unsupported runners; `scripts/lib/` holds what the steps
 share, also with the tools in `scripts/update/` that update the pinned release.
 
 Tests: `tests/run.sh` runs the unit tests of the scripts in `tests/unit/`, which
-mirrors `scripts/`, with the helpers in `tests/harness/`; `tests/ci/<job>/`
-holds the checks that a job of the CI runs on real runners after the action. The
-tests take action-shell-lib from `SHELL_LIB`, which the CI sets, or else fetch
-it with `git` at the commit that `action.yml` pins, into
+mirrors `scripts/`, with the harness of `internal/testing/` of action-shell-lib
+and the helpers in `tests/harness/`; `tests/ci/<job>/` holds the checks that a
+job of the CI runs on real runners after the action. The tests take
+action-shell-lib from `SHELL_LIB`, which the CI sets, or else fetch it with
+`git` at the commit that `action.yml` pins, into
 `~/.cache/flakeyard/action-shell-lib/`.
 
 CI: [`test.yaml`](.github/workflows/test.yaml) runs the unit tests and the
