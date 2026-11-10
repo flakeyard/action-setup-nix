@@ -1,14 +1,13 @@
 #!/usr/bin/env bash
 # Checks an installation made by the action on a real runner.
 # Usage: tests/ci/install/check.sh
-# Inputs (environment): NIX_VERSION (output of the action), EXTRA_SUBSTITUTER.
+# Inputs (environment): NIX_VERSION (output of the action), EXTRA_SUBSTITUTER,
+# SHELL_LIB.
 set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../.."
 
-fail() {
-  printf '::error::%s\n' "$1"
-  exit 1
-}
+# shellcheck source=/dev/null # the library, from SHELL_LIB
+source "$SHELL_LIB/report.sh"
 
 echo "::group::Runner"
 # shellcheck disable=SC1091 # the runner's file

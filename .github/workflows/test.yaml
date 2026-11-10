@@ -49,11 +49,17 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # report.sh of the library for the checks below, at the commit that
+      # action.yml pins.
+      - id: lib
+        uses: flakeyard/action-shell-lib@45a4f6dab25e68ed019882bcdf187f5067c8a9c1 # v0.1.0
       # Checks the pinned tarballs against the signed store paths of
       # cache.nixos.org; fails if versions.sh would change.
       - run: tests/ci/pinned/check.sh
       # Updates a copy from the previous Nix release, as a maintainer would.
-      - run: tests/ci/pinned/update.sh
+      - env:
+          SHELL_LIB: ${{ steps.lib.outputs.path }}
+        run: tests/ci/pinned/update.sh
 
   install:
     name: Install on ${{ matrix.runner }}
@@ -69,6 +75,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # report.sh of the library for the checks below, at the commit that
+      # action.yml pins.
+      - id: lib
+        uses: flakeyard/action-shell-lib@45a4f6dab25e68ed019882bcdf187f5067c8a9c1 # v0.1.0
 
       - id: setup
         uses: $/
@@ -80,6 +90,7 @@ jobs:
         env:
           NIX_VERSION: ${{ steps.setup.outputs.nix-version }}
           EXTRA_SUBSTITUTER: https://flakeyard.cachix.org
+          SHELL_LIB: ${{ steps.lib.outputs.path }}
         run: tests/ci/install/check.sh
 
       - name: Record the configuration
@@ -95,8 +106,10 @@ jobs:
       - name: Check that the second run failed and changed nothing
         env:
           OUTCOME: ${{ steps.again.outcome }}
+          SHELL_LIB: ${{ steps.lib.outputs.path }}
         run: |
-          [[ $OUTCOME == failure ]] || { echo "::error::The second run did not fail."; exit 1; }
+          source "$SHELL_LIB/report.sh"
+          [[ $OUTCOME == failure ]] || fail "The second run did not fail."
           sha256sum --check "$RUNNER_TEMP/nix.conf.sha256"
 
   without-token:
@@ -109,10 +122,16 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # report.sh of the library for the checks below, at the commit that
+      # action.yml pins.
+      - id: lib
+        uses: flakeyard/action-shell-lib@45a4f6dab25e68ed019882bcdf187f5067c8a9c1 # v0.1.0
       - uses: $/
         with:
           github-token: ""
-      - run: tests/ci/without-token/check.sh
+      - env:
+          SHELL_LIB: ${{ steps.lib.outputs.path }}
+        run: tests/ci/without-token/check.sh
 
   invalid-token:
     name: Install with an invalid token
@@ -124,10 +143,16 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # report.sh of the library for the checks below, at the commit that
+      # action.yml pins.
+      - id: lib
+        uses: flakeyard/action-shell-lib@45a4f6dab25e68ed019882bcdf187f5067c8a9c1 # v0.1.0
       - uses: $/
         with:
           github-token: ghs_invalid0000000000000000000000000000
-      - run: tests/ci/invalid-token/check.sh
+      - env:
+          SHELL_LIB: ${{ steps.lib.outputs.path }}
+        run: tests/ci/invalid-token/check.sh
 
   hostile-environment:
     name: Install in a hostile job environment
@@ -144,6 +169,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      # report.sh of the library for the checks below, at the commit that
+      # action.yml pins.
+      - id: lib
+        uses: flakeyard/action-shell-lib@45a4f6dab25e68ed019882bcdf187f5067c8a9c1 # v0.1.0
       - name: Export functions and shell options
         run: tests/ci/hostile-environment/github-env.sh
       # Last before the action: bash and env on PATH are fakes from here on.
@@ -154,6 +183,8 @@ jobs:
       - uses: $/
       - name: Check the installation
         shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+        env:
+          SHELL_LIB: ${{ steps.lib.outputs.path }}
         run: /usr/bin/bash tests/ci/hostile-environment/check.sh
 
   rejected:
