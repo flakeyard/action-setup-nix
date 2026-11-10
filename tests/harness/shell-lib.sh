@@ -1,8 +1,8 @@
 # shellcheck shell=bash disable=SC2154,SC2034 # shared with tests/harness
 # action-shell-lib at the commit that action.yml pins, whose env.sh and
-# run-step.sh the steps use. CI gives it in SHELL_LIB; otherwise it is fetched
-# once into the cache. The steps get a copy whose SYSTEM_PATH is the tools of
-# the tests. Sourced by tests/run.sh after env.sh.
+# run-step.sh the steps use and whose internal/testing the tests use. CI gives
+# it in SHELL_LIB; otherwise it is fetched once into the cache. Sourced by
+# tests/run.sh after env.sh.
 
 LIBRARY_URL=https://github.com/flakeyard/action-shell-lib
 # The pin in action.yml; the commit is the first group.
@@ -56,19 +56,4 @@ resolve_library() {
   fetch_library "$commit" "$library"
 }
 
-# copy_library: $shell_lib, a copy of the library whose SYSTEM_PATH is the
-# tools of the tests; exits if env.sh of the library no longer has it.
-copy_library() {
-  local env_sh=$shared/shell-lib/env.sh system_path=$root/tests/harness/stub:$sysbin
-  shell_lib=$shared/shell-lib
-  cp -R -- "$library" "$shell_lib"
-  sed -i -e "s|^readonly SYSTEM_PATH=.*|readonly SYSTEM_PATH=$system_path|" "$env_sh"
-  # Without it, the scripts would run the tools of the host.
-  if ! grep -qx "readonly SYSTEM_PATH=$system_path" "$env_sh"; then
-    echo "tests/run.sh: cannot redirect SYSTEM_PATH in env.sh of the library" >&2
-    exit 2
-  fi
-}
-
 resolve_library
-copy_library

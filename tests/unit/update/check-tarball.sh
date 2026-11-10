@@ -11,7 +11,7 @@ nix=$(printf 'b%.0s' {1..32})-nix-9.0.0
 # release_setup: a release tarball whose store paths are in the test cache.
 # Change $release, then call pack.
 release_setup() {
-  setup
+  setup_action
   sed -i -e 's|^CACHE_URL = .*|CACHE_URL = "https://example.test/cache"|' \
     "$action/scripts/update/check-tarball.py"
   echo "$test_key" >"$action/scripts/lib/cache-public-key"
@@ -178,14 +178,14 @@ run "check-tarball: .reginfo with CRLF" fail update/check-tarball.py -- "$work/r
 expect message "error: invalid store path in .reginfo"
 finish
 
-setup
+setup_action
 printf abc >"$work/file"
 run "check-tarball: NAR hash of a file" ok update/check-tarball.py -- --nar-hash "$work/file"
 # The value of the earlier nar-hash.py, which checked the real releases.
 expect message "sha256:0c2jffsl15masdjkw0akr32jl4daplrwaq81lapg84nqai3ip9qi 120"
 finish
 
-setup
+setup_action
 run "check-tarball: usage" fail update/check-tarball.py -- "$work/a" "$work/b"
 expect message "Usage: check-tarball.py TARBALL"
 finish

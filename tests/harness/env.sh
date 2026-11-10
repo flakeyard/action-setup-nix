@@ -1,10 +1,9 @@
 # shellcheck shell=bash disable=SC2034 # variables for the unit tests
-# The environment of the unit tests, sourced first by tests/run.sh: the
-# results so far, files shared by all tests and the tools of the scripts.
+# The environment of the unit tests, sourced first by tests/run.sh: files
+# shared by all tests and the tools of the scripts.
 export LC_ALL=C
 
 root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)
-failed=0 passed=0 current=""
 key=cache.example.org-1:$(printf 'k%.0s' {1..43})=
 
 # shellcheck source-path=SCRIPTDIR source=../../versions.sh

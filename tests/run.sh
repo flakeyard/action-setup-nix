@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-# Unit tests of the scripts of the action; see tests/harness/.
+# Unit tests of the scripts of the action; see tests/harness/. They read
+# action.yml with mikefarah yq v4, which GitHub-hosted runners have; elsewhere
+# run them with: nix shell nixpkgs#yq-go -c tests/run.sh
 # Usage: tests/run.sh
 set -uo pipefail
 
@@ -7,12 +9,35 @@ set -uo pipefail
 source "$(dirname -- "${BASH_SOURCE[0]}")/harness/env.sh"
 # shellcheck source-path=SCRIPTDIR source=harness/shell-lib.sh
 source "$root/tests/harness/shell-lib.sh"
+# The harness of the library; not its public API, used only by tests.
+# shellcheck source=/dev/null
+source "$library/internal/testing/case.sh"
+# shellcheck source=/dev/null
+source "$library/internal/testing/checks.sh"
+# shellcheck source=/dev/null
+source "$library/internal/testing/yaml.sh"
+# shellcheck source=/dev/null
+source "$library/internal/testing/consumer/library.sh"
+# shellcheck source=/dev/null
+source "$library/internal/testing/consumer/action.sh"
+# The steps get a copy of the library whose SYSTEM_PATH is the tools of the
+# tests.
+shell_lib=$shared/shell-lib
+copy_library "$shell_lib" "$root/tests/harness/stub:$sysbin"
+# shellcheck source-path=SCRIPTDIR source=harness/checks.sh
+source "$root/tests/harness/checks.sh"
 # shellcheck source-path=SCRIPTDIR source=harness/action.sh
 source "$root/tests/harness/action.sh"
 # shellcheck source-path=SCRIPTDIR source=harness/tarball.sh
 source "$root/tests/harness/tarball.sh"
-# shellcheck source-path=SCRIPTDIR source=harness/case.sh
-source "$root/tests/harness/case.sh"
+# The steps of every test come from action.yml, read with yq.
+# shellcheck disable=SC2034 # read by internal/testing/yaml.sh
+code_root=$root
+require_yq action.yml || {
+  conclude
+  exit 1
+}
+ACTION_JSON=$(load_yaml action.yml)
 # shellcheck source-path=SCRIPTDIR source=harness/steps.sh
 source "$root/tests/harness/steps.sh"
 # shellcheck source-path=SCRIPTDIR source=harness/job-path.sh
@@ -35,5 +60,4 @@ source "$root/tests/unit/update/nix.sh"
 # shellcheck source-path=SCRIPTDIR source=unit/action.sh
 source "$root/tests/unit/action.sh"
 
-echo "passed: $passed, failed: $failed"
-((failed == 0))
+conclude

@@ -2,12 +2,18 @@
 # Updates a copy of the action from the release that the pinned one replaced,
 # PREVIOUS_NIX_VERSION, with scripts/update/nix.sh, on the real release
 # tarballs. The result must equal the committed versions.sh and README.
+# Inputs (environment): SHELL_LIB.
 set -euo pipefail
+# shellcheck source=/dev/null # the library, from SHELL_LIB
+source "$SHELL_LIB/report.sh"
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../.."
 # shellcheck source-path=SCRIPTDIR source=../../../versions.sh
 source versions.sh
 # shellcheck source-path=SCRIPTDIR source=../../../scripts/lib/tarball.sh
 source scripts/lib/tarball.sh
+
+# A SHA-256 as releases.nixos.org publishes it.
+SHA256_RE='^[0-9a-f]{64}$'
 
 previous=$PREVIOUS_NIX_VERSION
 echo "Updating a copy from Nix $previous to $NIX_VERSION."
@@ -25,10 +31,8 @@ sed -i -e "s/^NIX_VERSION=.*/NIX_VERSION=$previous/" \
 # before it compares their installer scripts.
 for system in "${SYSTEMS[@]}"; do
   hash=$("${HTTPS_CURL[@]}" "$(tarball_url "$previous" "$system").sha256")
-  [[ $hash =~ ^[0-9a-f]{64}$ ]] || {
-    echo "::error::Invalid published SHA-256 of Nix $previous for $system: $hash"
-    exit 1
-  }
+  [[ $hash =~ $SHA256_RE ]] ||
+    fail "Invalid published SHA-256 of Nix $previous for $system: $hash"
   var=$(pin_var "$system")
   sed -i "s/^$var=.*/$var=$hash/" "$work/versions.sh"
 done
