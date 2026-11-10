@@ -18,23 +18,14 @@ fake_job_tools() {
   done
 }
 
-# as_step: $action/scripts/as-step.sh, which runs step/STEP.sh like run-step.sh,
-# through /usr/bin/bash -p, but with every variable of the test.
-as_step() {
-  # shellcheck disable=SC2016 # code for the script, not expanded here
-  printf '#!/usr/bin/bash -p\n%s\n' \
-    'exec /usr/bin/bash -p "${BASH_SOURCE[0]%/*}/step/$1.sh"' >"$action/scripts/as-step.sh"
-  chmod +x "$action/scripts/as-step.sh"
-}
-
-# run_with_job_path NAME STEP [VAR=VALUE...]: runs step/STEP.sh with the fake
-# tools first on PATH, and checks that it ran none of them.
+# run_with_job_path NAME STEP [VAR=VALUE...]: runs step/STEP.sh like
+# action.yml does, with the fake tools first on PATH, and checks that it ran
+# none of them.
 run_with_job_path() {
   local name=$1 step=$2
   fake_job_tools
-  as_step
-  run "$name" ok as-step.sh "${@:3}" \
-    PATH="$work/job-bin:$root/tests/harness/stub:$sysbin" -- "$step"
+  run_step "$name" ok "$step" "${@:3}" \
+    PATH="$work/job-bin:$root/tests/harness/stub:$sysbin"
   [[ -z $current || ! -e $work/job-tools-ran ]] ||
     report "ran tools of the job PATH: $(paste -sd';' "$work/job-tools-ran")"
 }
