@@ -164,7 +164,9 @@ and the helpers in `tests/harness/`; `tests/ci/<job>/` holds the checks that a
 job of the CI runs on real runners after the action. The tests take
 action-shell-lib from `SHELL_LIB`, which the CI sets, or else fetch it with
 `git` at the commit that `action.yml` pins, into
-`~/.cache/flakeyard/action-shell-lib/`.
+`~/.cache/flakeyard/action-shell-lib/`. They read `action.yml` with mikefarah
+`yq` v4, which GitHub-hosted runners have; elsewhere run
+`nix shell nixpkgs#yq-go -c tests/run.sh`.
 
 CI: [`test.yaml`](.github/workflows/test.yaml) runs the unit tests and the
 action on the supported runners and ends with [workflow-check][workflow-check],

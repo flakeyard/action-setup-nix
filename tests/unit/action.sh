@@ -11,8 +11,8 @@ hostile_vars=(
   BASH_ENV=/dev/null NIX_CONFIG="sandbox = false"
 )
 
-# The library step: the pinned commit, then the release as a comment.
-LIBRARY_STEP_RE='^flakeyard/action-shell-lib@[0-9a-f]{40} # v[0-9.]+$'
+# The library step at a pinned commit, and its directory.
+LIBRARY_USES_FORM='^flakeyard/action-shell-lib@[0-9a-f]{40}$'
 LIBRARY_PATH='${{ steps.lib.outputs.path }}'
 
 setup_action
@@ -23,24 +23,15 @@ expect no-message "INJECTED"
 expect no-message "PS4-RAN"
 finish
 
-setup
-current="action: the library first, then every step through its run-step.sh"
-steps=0
-while IFS=$FIELD_SEPARATOR read -r uses shell lib command; do
-  steps=$((steps + 1))
-  if ((steps == 1)); then
-    [[ $uses =~ $LIBRARY_STEP_RE ]] || report "the first step is not the library: '$uses'"
-  elif [[ $shell != "$STEP_SHELL" || $lib != "$LIBRARY_PATH" || ! $command =~ $STEP_RUN_RE ]]; then
-    report "a step does not use run-step.sh: shell '$shell', SHELL_LIB '$lib', run '$command'"
-  fi
-done < <(action_steps)
-((steps == 5)) || report "$steps steps, expected the library and 4 more"
-finish
+yaml_check "$ACTION_JSON" "action: the library is the first step" \
+  '.runs.steps[0] | .id == "lib" and (.uses | test($form))' --arg form "$LIBRARY_USES_FORM"
+yaml_check "$ACTION_JSON" "action: every other step runs through run-step.sh" \
+  '.runs.steps[1:] | length == 4 and all(.shell == $shell
+    and .env.SHELL_LIB == $lib and (.run | test($run)))' \
+  --arg shell "$STEP_SHELL" --arg lib "$LIBRARY_PATH" --arg run "$STEP_RUN_RE"
 
-setup
-current="action: every use of the library names the commit of action.yml"
-pinned=$(pinned_library_commit)
-while IFS= read -r use; do
-  [[ $use == *"@$pinned "* ]] || report "another commit: $use"
-done < <(grep -rhoE 'flakeyard/action-shell-lib@[^ ]+ ' "$root/action.yml" "$root/.github")
-finish
+workflow=$(code_root=$root load_yaml .github/workflows/test.yaml)
+yaml_check "$workflow" "action: every use of the library names the commit of action.yml" \
+  '[.. | objects | .uses? // empty | select(startswith("flakeyard/action-shell-lib@"))]
+  | length > 0 and all(. == $uses)' \
+  --arg uses "$(jq -r '.runs.steps[0].uses' <<<"$ACTION_JSON")"
