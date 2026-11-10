@@ -11,15 +11,15 @@ source "$(dirname -- "${BASH_SOURCE[0]}")/harness/env.sh"
 source "$root/tests/harness/shell-lib.sh"
 # The harness of the library; not its public API, used only by tests.
 # shellcheck source=/dev/null
-source "$library/internal/testing/case.sh"
+source "$SHELL_LIB/internal/testing/case.sh"
 # shellcheck source=/dev/null
-source "$library/internal/testing/checks.sh"
+source "$SHELL_LIB/internal/testing/checks.sh"
 # shellcheck source=/dev/null
-source "$library/internal/testing/yaml.sh"
+source "$SHELL_LIB/internal/testing/yaml.sh"
 # shellcheck source=/dev/null
-source "$library/internal/testing/consumer/library.sh"
+source "$SHELL_LIB/internal/testing/consumer/library.sh"
 # shellcheck source=/dev/null
-source "$library/internal/testing/consumer/action.sh"
+source "$SHELL_LIB/internal/testing/consumer/action.sh"
 # The steps get a copy of the library whose SYSTEM_PATH is the tools of the
 # tests.
 shell_lib=$shared/shell-lib
