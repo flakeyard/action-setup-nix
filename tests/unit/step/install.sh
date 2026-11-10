@@ -11,7 +11,7 @@ expect path "$fs/nix/var/nix/profiles/default/bin"
 if [[ -n $current ]] && grep -qE '^(NIX_|CALLS|FIXTURES|GITHUB_)' "$work/installer-env"; then
   report "the installer got the job environment: $(grep -E '^(NIX_|CALLS|FIXTURES|GITHUB_)' "$work/installer-env")"
 fi
-expect file "$fs/etc/nix/nix.conf" "$("$action/scripts/lib/nix-conf.sh")"$'\n'"build-users-group = nixbld"
+expect file "$fs/etc/nix/nix.conf" "$(SHELL_LIB="$shell_lib" "$action/scripts/lib/nix-conf.sh")"$'\n'"build-users-group = nixbld"
 [[ -z $current || -z $(ls -A "$work/temp") ]] || report "temporary files left: $(ls -A "$work/temp")"
 finish
 
@@ -39,7 +39,7 @@ finish
 setup
 run "install: extra caches reach nix.conf" ok step/install.sh \
   SUBSTITUTERS="https://cache.example.org" KEYS="$key"
-expect file "$fs/etc/nix/nix.conf" "$(SUBSTITUTERS="https://cache.example.org" KEYS="$key" "$action/scripts/lib/nix-conf.sh")"$'\n'"build-users-group = nixbld"
+expect file "$fs/etc/nix/nix.conf" "$(SHELL_LIB="$shell_lib" SUBSTITUTERS="https://cache.example.org" KEYS="$key" "$action/scripts/lib/nix-conf.sh")"$'\n'"build-users-group = nixbld"
 finish
 
 setup

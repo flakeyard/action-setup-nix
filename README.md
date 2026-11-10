@@ -154,12 +154,16 @@ it replaced, `PREVIOUS_NIX_VERSION` in `versions.sh`, which must reproduce
 `versions.sh` and this README.
 
 Layout: `scripts/step/` holds one script per step of `action.yml`, which runs
-them through `scripts/run-step.sh`; `scripts/lib/` holds what the steps share,
-also with the tools in `scripts/update/` that update the pinned release.
+them through the `run-step.sh` of [action-shell-lib][action-shell-lib], whose
+first step rejects unsupported runners; `scripts/lib/` holds what the steps
+share, also with the tools in `scripts/update/` that update the pinned release.
 
 Tests: `tests/run.sh` runs the unit tests of the scripts in `tests/unit/`, which
 mirrors `scripts/`, with the helpers in `tests/harness/`; `tests/ci/<job>/`
-holds the checks that a job of the CI runs on real runners after the action.
+holds the checks that a job of the CI runs on real runners after the action. The
+tests take action-shell-lib from `SHELL_LIB`, which the CI sets, or else fetch
+it with `git` at the commit that `action.yml` pins, into
+`~/.cache/flakeyard/action-shell-lib/`.
 
 CI: [`test.yaml`](.github/workflows/test.yaml) runs the unit tests and the
 action on the supported runners and ends with [workflow-check][workflow-check],
@@ -182,6 +186,7 @@ are released:
 
 [MIT](LICENSE).
 
+[action-shell-lib]: https://github.com/flakeyard/action-shell-lib
 [nix]: https://github.com/NixOS/nix
 [scorecard-badge]:
   https://api.scorecard.dev/projects/github.com/flakeyard/action-setup-nix/badge

@@ -10,25 +10,6 @@ expect no-message "::warning::"
 finish
 
 setup
-run "check: arm64" ok step/check.sh RUNNER_ARCH=ARM64
-finish
-
-setup
-run "check: macOS" fail step/check.sh RUNNER_OS=macOS RUNNER_ARCH=ARM64
-expect message "Unsupported runner macOS/ARM64"
-finish
-
-setup
-run "check: 32-bit runner" fail step/check.sh RUNNER_ARCH=X86
-expect message "Unsupported runner Linux/X86"
-finish
-
-setup
-run "check: self-hosted runner" fail step/check.sh RUNNER_ENVIRONMENT=self-hosted
-expect message "Only GitHub-hosted runners"
-finish
-
-setup
 touch "$fs/.dockerenv"
 run "check: container job" fail step/check.sh
 expect message "needs systemd"
@@ -173,7 +154,7 @@ finish
 setup
 mkdir "$fs/nix"
 run "check: reports every problem at once" fail step/check.sh \
-  RUNNER_ENVIRONMENT=self-hosted SUBSTITUTERS=http://x KEYS=bad TOKEN="a b"
+  SUDO_FAILS=1 SUBSTITUTERS=http://x KEYS=bad TOKEN="a b"
 expect errors 5
 finish
 

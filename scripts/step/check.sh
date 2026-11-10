@@ -27,12 +27,8 @@ error() {
   failed=true
 }
 
-# The runner.
-
-# is_supported_runner: a Linux runner on X64 or ARM64.
-is_supported_runner() {
-  [[ ${RUNNER_OS-} == Linux ]] && nix_system >/dev/null
-}
+# The runner. The library step of action.yml rejected every runner but a
+# GitHub-hosted Linux runner on X64 or ARM64.
 
 # runs_on_host_with_systemd: the job runs on the runner, not in a container,
 # and systemd runs there.
@@ -41,10 +37,6 @@ runs_on_host_with_systemd() {
 }
 
 check_runner() {
-  is_supported_runner ||
-    error "$(unsupported_runner "${RUNNER_OS-?}/${RUNNER_ARCH-?}")"
-  [[ ${RUNNER_ENVIRONMENT-} == github-hosted ]] ||
-    error "Only GitHub-hosted runners are supported, not '${RUNNER_ENVIRONMENT-}'."
   runs_on_host_with_systemd ||
     error "The Nix daemon needs systemd: run the job directly on the runner, not in a container."
   sudo -n true 2>/dev/null ||

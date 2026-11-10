@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Sets, for the later steps of the hostile job, exported functions that replace
 # commands of the scripts of the action, and shell options with a PS4 that runs
-# code. Each records in $RUNNER_TEMP when a script of the action uses it.
+# code. Each records in $RUNNER_TEMP when a script of the action, or of the
+# library it runs, uses it.
 set -euo pipefail
 
 # Commands of the scripts, builtins too; each function runs the real command.
@@ -12,7 +13,7 @@ COMMANDS=(sha256sum tar cat mktemp id dirname printf echo)
 recorder() {
   local marker=$1 what=$2
   # shellcheck disable=SC2016 # expanded by the scripts of the action
-  printf 'case $0 in */scripts/*.sh) builtin printf "%%s %%s\\n" "$0" %s >>"$RUNNER_TEMP/%s" ;; esac' \
+  printf 'case $0 in */scripts/*.sh | */action-shell-lib/*.sh) builtin printf "%%s %%s\\n" "$0" %s >>"$RUNNER_TEMP/%s" ;; esac' \
     "$what" "$marker"
 }
 

@@ -5,19 +5,21 @@ set -uo pipefail
 
 # shellcheck source-path=SCRIPTDIR source=harness/env.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/harness/env.sh"
+# shellcheck source-path=SCRIPTDIR source=harness/shell-lib.sh
+source "$root/tests/harness/shell-lib.sh"
 # shellcheck source-path=SCRIPTDIR source=harness/action.sh
 source "$root/tests/harness/action.sh"
 # shellcheck source-path=SCRIPTDIR source=harness/tarball.sh
 source "$root/tests/harness/tarball.sh"
 # shellcheck source-path=SCRIPTDIR source=harness/case.sh
 source "$root/tests/harness/case.sh"
+# shellcheck source-path=SCRIPTDIR source=harness/steps.sh
+source "$root/tests/harness/steps.sh"
 # shellcheck source-path=SCRIPTDIR source=harness/job-path.sh
 source "$root/tests/harness/job-path.sh"
 
 # shellcheck source-path=SCRIPTDIR source=unit/step/check.sh
 source "$root/tests/unit/step/check.sh"
-# shellcheck source-path=SCRIPTDIR source=unit/step/unsupported-os.sh
-source "$root/tests/unit/step/unsupported-os.sh"
 # shellcheck source-path=SCRIPTDIR source=unit/lib/nix-conf.sh
 source "$root/tests/unit/lib/nix-conf.sh"
 # shellcheck source-path=SCRIPTDIR source=unit/step/install.sh
@@ -30,8 +32,8 @@ source "$root/tests/unit/step/verify.sh"
 source "$root/tests/unit/update/check-tarball.sh"
 # shellcheck source-path=SCRIPTDIR source=unit/update/nix.sh
 source "$root/tests/unit/update/nix.sh"
-# shellcheck source-path=SCRIPTDIR source=unit/run-step.sh
-source "$root/tests/unit/run-step.sh"
+# shellcheck source-path=SCRIPTDIR source=unit/action.sh
+source "$root/tests/unit/action.sh"
 
 echo "passed: $passed, failed: $failed"
 ((failed == 0))

@@ -22,48 +22,62 @@ outputs:
   nix-version:
     description: Installed Nix version, as X.Y.Z.
     value: ${{ steps.verify.outputs.nix-version }}
-# Steps use the runner's bash in privileged mode (-p), which reads no BASH_ENV
-# and imports no functions or shell options, and run-step.sh gives the scripts
-# only the variables they read, so that earlier steps of the job cannot inject
-# code through them. Variables of the dynamic loader, such as LD_PRELOAD, still
-# reach the first bash of every step: GitHub does not block them.
+# The library step comes first: it fails on every runner but a GitHub-hosted
+# Linux runner on X64 or ARM64, before any step that needs /usr/bin/bash. The
+# other steps use the runner's bash in privileged mode (-p), which reads no
+# BASH_ENV and imports no functions or shell options, and the run-step.sh of
+# the library gives each script only the variables named in its run line, so
+# that earlier steps of the job cannot inject code through them. Variables of
+# the dynamic loader, such as LD_PRELOAD, still reach the first bash of every
+# step: GitHub does not block them.
 runs:
   using: composite
   steps:
-    # The other steps need the runner's /usr/bin/bash, which only Linux has.
-    - name: Check the operating system
-      if: runner.os != 'Linux'
-      shell: bash
-      run: bash "$GITHUB_ACTION_PATH/scripts/step/unsupported-os.sh"
+    - id: lib
+      uses: flakeyard/action-shell-lib@3bad257f744402ce4627954c4250171150ffb54d # v0.1.1
 
     - name: Check the runner and inputs
       shell: /usr/bin/bash --noprofile --norc -p -e -o pipefail {0}
       env:
+        SHELL_LIB: ${{ steps.lib.outputs.path }}
         SUBSTITUTERS: ${{ inputs.extra-substituters }}
         KEYS: ${{ inputs.extra-trusted-public-keys }}
         TOKEN: ${{ inputs.github-token }}
-      run: /usr/bin/bash -p "$GITHUB_ACTION_PATH/scripts/run-step.sh" check
+      run: >-
+        /usr/bin/bash -p "$SHELL_LIB/run-step.sh"
+        "$GITHUB_ACTION_PATH/scripts/step" check SUBSTITUTERS KEYS TOKEN HOME
+        XDG_CONFIG_HOME PATH
 
     - name: Install Nix
       shell: /usr/bin/bash --noprofile --norc -p -e -o pipefail {0}
       env:
+        SHELL_LIB: ${{ steps.lib.outputs.path }}
         SUBSTITUTERS: ${{ inputs.extra-substituters }}
         KEYS: ${{ inputs.extra-trusted-public-keys }}
-      run: /usr/bin/bash -p "$GITHUB_ACTION_PATH/scripts/run-step.sh" install
+      run: >-
+        /usr/bin/bash -p "$SHELL_LIB/run-step.sh"
+        "$GITHUB_ACTION_PATH/scripts/step" install SUBSTITUTERS KEYS RUNNER_ARCH
+        RUNNER_TEMP GITHUB_PATH HOME
 
     - name: Configure the GitHub token
       if: inputs.github-token != ''
       shell: /usr/bin/bash --noprofile --norc -p -e -o pipefail {0}
       env:
+        SHELL_LIB: ${{ steps.lib.outputs.path }}
         TOKEN: ${{ inputs.github-token }}
-      run:
-        /usr/bin/bash -p "$GITHUB_ACTION_PATH/scripts/run-step.sh"
-        configure-token
+      run: >-
+        /usr/bin/bash -p "$SHELL_LIB/run-step.sh"
+        "$GITHUB_ACTION_PATH/scripts/step" configure-token TOKEN HOME
+        XDG_CONFIG_HOME
 
     - id: verify
       name: Check the installation
       shell: /usr/bin/bash --noprofile --norc -p -e -o pipefail {0}
       env:
+        SHELL_LIB: ${{ steps.lib.outputs.path }}
         SUBSTITUTERS: ${{ inputs.extra-substituters }}
         KEYS: ${{ inputs.extra-trusted-public-keys }}
-      run: /usr/bin/bash -p "$GITHUB_ACTION_PATH/scripts/run-step.sh" verify
+      run: >-
+        /usr/bin/bash -p "$SHELL_LIB/run-step.sh"
+        "$GITHUB_ACTION_PATH/scripts/step" verify SUBSTITUTERS KEYS
+        GITHUB_OUTPUT HOME

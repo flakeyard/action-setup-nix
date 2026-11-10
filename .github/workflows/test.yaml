@@ -32,7 +32,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - run: tests/run.sh
+      # The library that the steps use, at the commit that action.yml pins.
+      - id: lib
+        uses: flakeyard/action-shell-lib@3bad257f744402ce4627954c4250171150ffb54d # v0.1.1
+      - env:
+          SHELL_LIB: ${{ steps.lib.outputs.path }}
+        run: tests/run.sh
 
   pinned:
     name: Pinned release

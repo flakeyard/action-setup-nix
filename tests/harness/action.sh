@@ -17,8 +17,7 @@ setup() {
     PATH="$root/tests/harness/stub:$sysbin" HOME="$work/home"
     CALLS="$work/calls" FIXTURES="$work/fixtures"
     GITHUB_OUTPUT="$work/output" GITHUB_PATH="$work/path"
-    RUNNER_TEMP="$work/temp" RUNNER_OS=Linux RUNNER_ARCH=X64
-    RUNNER_ENVIRONMENT=github-hosted
+    RUNNER_TEMP="$work/temp" RUNNER_ARCH=X64 SHELL_LIB="$shell_lib"
   )
 }
 
@@ -31,14 +30,14 @@ copy_action() {
   redirect_lib_paths
 }
 
-# redirect_lib_paths: ROOT and SYSTEM_PATH of lib/env.sh to $fs and the tools
-# of the tests; exits if lib/env.sh no longer has them.
+# redirect_lib_paths: ROOT of lib/env.sh to $fs; exits if lib/env.sh no
+# longer has it. SYSTEM_PATH is the one of the copy of the library.
 redirect_lib_paths() {
-  local lib=$action/scripts/lib/env.sh system_path=$root/tests/harness/stub:$sysbin
-  sed -i -e "s|^ROOT=\$|ROOT=$fs|" -e "s|^SYSTEM_PATH=.*|SYSTEM_PATH=$system_path|" "$lib"
-  # Without these, the scripts would look at the host.
-  if ! grep -qx "ROOT=$fs" "$lib" || ! grep -qx "SYSTEM_PATH=$system_path" "$lib"; then
-    echo "tests/run.sh: cannot redirect ROOT and SYSTEM_PATH in lib/env.sh" >&2
+  local lib=$action/scripts/lib/env.sh
+  sed -i -e "s|^ROOT=\$|ROOT=$fs|" "$lib"
+  # Without it, the scripts would look at the host.
+  if ! grep -qx "ROOT=$fs" "$lib"; then
+    echo "tests/run.sh: cannot redirect ROOT in lib/env.sh" >&2
     exit 2
   fi
 }
