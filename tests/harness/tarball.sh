@@ -8,16 +8,19 @@ tarball_fixture() {
   echo "$work/fixtures/nix-$version-$system.tar.xz"
 }
 
-# sha256_of FILE: prints the SHA-256 of FILE.
-sha256_of() {
+# fixture_sha256 FILE: prints the SHA-256 of FILE. Not sha256_of of
+# scripts/lib/tarball.sh: the hashes of the fixtures are the values that the
+# scripts must compute with it.
+fixture_sha256() {
   sha256sum <"$1" | cut -d' ' -f1
 }
 
 # pin_tarball VERSION SYSTEM: pins the hash of the release tarball of SYSTEM
 # in the copy of the action.
 pin_tarball() {
-  local version=$1 system=$2 var=NIX_SHA256_${2//-/_} hash
-  hash=$(sha256_of "$(tarball_fixture "$version" "$system")")
+  local version=$1 system=$2 var hash
+  var=$(pin_var "$system")
+  hash=$(fixture_sha256 "$(tarball_fixture "$version" "$system")")
   sed -i -e "s|^$var=.*|$var=$hash|" "$action/versions.sh"
 }
 

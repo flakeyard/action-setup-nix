@@ -9,6 +9,8 @@ key=cache.example.org-1:$(printf 'k%.0s' {1..43})=
 
 # shellcheck source-path=SCRIPTDIR source=../../versions.sh
 source "$root/versions.sh"
+# shellcheck source-path=SCRIPTDIR source=../../scripts/lib/tarball.sh
+source "$root/scripts/lib/tarball.sh"
 
 # Files shared by all tests, removed at the end.
 shared=$(mktemp -d)

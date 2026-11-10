@@ -154,8 +154,8 @@ it replaced, `PREVIOUS_NIX_VERSION` in `versions.sh`, which must reproduce
 `versions.sh` and this README.
 
 Layout: `scripts/step/` holds one script per step of `action.yml`, which runs
-them through `scripts/run-step.sh`; `scripts/lib/` holds what the steps share
-and `scripts/update/` the tools that update the pinned release.
+them through `scripts/run-step.sh`; `scripts/lib/` holds what the steps share,
+also with the tools in `scripts/update/` that update the pinned release.
 
 Tests: `tests/run.sh` runs the unit tests of the scripts in `tests/unit/`, which
 mirrors `scripts/`, with the helpers in `tests/harness/`; `tests/ci/<job>/`

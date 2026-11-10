@@ -1,0 +1,7 @@
+--proto
+=https
+--tlsv1.2
+--silent
+--show-error
+--retry
+3
