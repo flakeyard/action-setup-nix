@@ -16,6 +16,14 @@ source "$library/internal/testing/case.sh"
 source "$library/internal/testing/checks.sh"
 # shellcheck source=/dev/null
 source "$library/internal/testing/yaml.sh"
+# shellcheck source=/dev/null
+source "$library/internal/testing/consumer/library.sh"
+# shellcheck source=/dev/null
+source "$library/internal/testing/consumer/action.sh"
+# The steps get a copy of the library whose SYSTEM_PATH is the tools of the
+# tests.
+shell_lib=$shared/shell-lib
+copy_library "$shell_lib" "$root/tests/harness/stub:$sysbin"
 # shellcheck source-path=SCRIPTDIR source=harness/checks.sh
 source "$root/tests/harness/checks.sh"
 # shellcheck source-path=SCRIPTDIR source=harness/action.sh

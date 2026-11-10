@@ -1,13 +1,9 @@
 # shellcheck shell=bash disable=SC2154,SC2034 # shared with tests/harness
 # The steps of action.yml, which tests/run.sh reads into ACTION_JSON, and runs
 # of a script as its step runs it: through run-step.sh of the library, with
-# the variables of its run line. Sourced by tests/run.sh.
+# the variables of its run line, which STEP_RUN_FORM of the library reads.
+# Sourced by tests/run.sh.
 
-STEP_SHELL='/usr/bin/bash --noprofile --norc -p -e -o pipefail {0}'
-# The run line of a step; the step is the first group, its variables the
-# second.
-# shellcheck disable=SC2016 # the text of action.yml, not expanded here
-STEP_RUN_RE='^/usr/bin/bash -p "\$SHELL_LIB/run-step\.sh" "\$GITHUB_ACTION_PATH/scripts/step" ([a-z-]+)(( [A-Z_]+)*)$'
 # Variables of the stubs, which a step passes on to them.
 STUB_VARS=(CALLS FIXTURES SUDO_FAILS)
 
@@ -16,7 +12,7 @@ STUB_VARS=(CALLS FIXTURES SUDO_FAILS)
 step_variables() {
   local step=$1 command names
   while IFS= read -r command; do
-    if [[ $command =~ $STEP_RUN_RE && ${BASH_REMATCH[1]} == "$step" ]]; then
+    if [[ $command =~ $STEP_RUN_FORM && ${BASH_REMATCH[1]} == "$step" ]]; then
       read -r -a names <<<"${BASH_REMATCH[2]}"
       printf '%s\n' "${names[@]}"
     fi
