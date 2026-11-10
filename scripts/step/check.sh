@@ -12,6 +12,10 @@ source "$lib/env.sh"
 source "$lib/runner.sh"
 # shellcheck source-path=SCRIPTDIR source=../lib/text.sh
 source "$lib/text.sh"
+# shellcheck source=/dev/null # the library, from SHELL_LIB
+source "$SHELL_LIB/report.sh"
+# shellcheck source=/dev/null
+source "$SHELL_LIB/github/forms.sh"
 
 # Values go into nix.conf, which the daemon reads: no whitespace inside a
 # value, no query (?trusted=1 disables signature checks), no fragment (#
@@ -19,13 +23,6 @@ source "$lib/text.sh"
 SUBSTITUTER_RE='^https://[A-Za-z0-9.-]+(:[0-9]{1,5})?(/[A-Za-z0-9._~/-]*)?$'
 # <name>:<base64 of a 32-byte Ed25519 key>.
 PUBLIC_KEY_RE='^[A-Za-z0-9._-]+:[A-Za-z0-9+/]{43}=$'
-TOKEN_RE='^[A-Za-z0-9_.-]+$'
-
-failed=false
-error() {
-  printf '::error::%s\n' "$1"
-  failed=true
-}
 
 # The runner. The library step of action.yml rejected every runner but a
 # GitHub-hosted Linux runner on X64 or ARM64.
@@ -38,9 +35,9 @@ runs_on_host_with_systemd() {
 
 check_runner() {
   runs_on_host_with_systemd ||
-    error "The Nix daemon needs systemd: run the job directly on the runner, not in a container."
+    problem "The Nix daemon needs systemd: run the job directly on the runner, not in a container."
   sudo -n true 2>/dev/null ||
-    error "The installation needs passwordless sudo."
+    problem "The installation needs passwordless sudo."
 }
 
 # is_tested_ubuntu OS: OS, as ID/VERSION_ID, is an Ubuntu release that the CI
@@ -59,8 +56,7 @@ warn_if_untested_os() {
   # shellcheck disable=SC1091 # the runner's file
   os=$(. "$ROOT/etc/os-release" && echo "${ID-}/${VERSION_ID-}")
   is_tested_ubuntu "$os" ||
-    printf '::warning::This action is not tested on %s; tested: Ubuntu %s.\n' \
-      "$os" "${TESTED_UBUNTU[*]}"
+    warning "This action is not tested on $os; tested: Ubuntu ${TESTED_UBUNTU[*]}."
 }
 
 # Nix installed before.
@@ -90,7 +86,7 @@ check_clean_runner() {
   local found=()
   mapfile -t found < <(previous_nix_traces)
   if ((${#found[@]})); then
-    error "Nix was installed on this runner before (found: ${found[*]}); this action installs Nix only on a clean runner, once per job."
+    problem "Nix was installed on this runner before (found: ${found[*]}); this action installs Nix only on a clean runner, once per job."
   fi
 }
 
@@ -101,7 +97,7 @@ check_substituters() {
   local url
   for url in "$@"; do
     [[ $url =~ $SUBSTITUTER_RE ]] ||
-      error "Invalid extra substituter '$(shown "$url")': expected an https URL without user information, query or fragment."
+      problem "Invalid extra substituter '$(shown "$url")': expected an https URL without user information, query or fragment."
   done
 }
 
@@ -110,7 +106,7 @@ check_keys() {
   local key
   for key in "$@"; do
     [[ $key =~ $PUBLIC_KEY_RE ]] ||
-      error "Invalid extra trusted public key '$(shown "$key")': expected <name>:<base64 Ed25519 key>."
+      problem "Invalid extra trusted public key '$(shown "$key")': expected <name>:<base64 Ed25519 key>."
   done
 }
 
@@ -118,20 +114,20 @@ check_keys() {
 check_cache_pairing() {
   local substituters=$1 keys=$2
   if ((keys && ! substituters)); then
-    error "extra-trusted-public-keys is set without extra-substituters."
+    problem "extra-trusted-public-keys is set without extra-substituters."
   fi
   if ((substituters && ! keys)); then
-    echo "::notice::Extra substituters without extra keys: their paths must be signed by cache.nixos.org."
+    notice "Extra substituters without extra keys: their paths must be signed by cache.nixos.org."
   fi
 }
 
 check_token() {
   [[ -n ${TOKEN-} ]] || return 0
-  if [[ $TOKEN =~ $TOKEN_RE ]]; then
+  if [[ $TOKEN =~ $TOKEN_FORM ]]; then
     echo "::add-mask::$TOKEN"
   else
     # The value is not printed: it may be a secret.
-    error "Invalid github-token: expected only letters, digits, underscores, dots and hyphens."
+    problem "Invalid github-token: expected only letters, digits, underscores, dots and hyphens."
   fi
 }
 
@@ -146,9 +142,8 @@ main() {
   check_keys "${keys[@]}"
   check_cache_pairing "${#substituters[@]}" "${#keys[@]}"
   check_token
-  if $failed; then
-    exit 1
-  fi
+  flush
+  ! has_problems || exit 1
 }
 
 main "$@"

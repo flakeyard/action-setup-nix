@@ -108,7 +108,8 @@ for url in "http://cache.example.org" "https://cache.example.org?trusted=1" \
   "https://cache.example.org/a%20b" "file:///nix/store"; do
   setup
   run "check: rejects substituter $url" fail step/check.sh SUBSTITUTERS="$url" KEYS="$key"
-  expect message "Invalid extra substituter '$url'"
+  # Workflow commands escape %, restated as an independent oracle.
+  expect message "Invalid extra substituter '${url//%/%25}'"
   finish
 done
 
@@ -156,6 +157,15 @@ mkdir "$fs/nix"
 run "check: reports every problem at once" fail step/check.sh \
   SUDO_FAILS=1 SUBSTITUTERS=http://x KEYS=bad TOKEN="a b"
 expect errors 5
+finish
+
+setup
+run "check: at most 10 errors, the last one counts the rest" fail step/check.sh \
+  SUBSTITUTERS="$(printf 'http://%s ' {a..l})" KEYS="$key"
+expect errors 10
+expect message "Invalid extra substituter 'http://i'"
+expect no-message "Invalid extra substituter 'http://j'"
+expect message "::error::3 more errors are not shown here."
 finish
 
 # --- more ---------------------------------------------------------

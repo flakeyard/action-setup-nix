@@ -10,15 +10,13 @@ lib=${BASH_SOURCE[0]%/*}/../lib
 source "$lib/env.sh"
 # shellcheck source-path=SCRIPTDIR source=../lib/runner.sh
 source "$lib/runner.sh"
+# shellcheck source=/dev/null # the library, from SHELL_LIB
+source "$SHELL_LIB/report.sh"
 
 # Only the runner user's own settings, not those of the job environment, such
 # as NIX_CONFIG.
 nix() {
   env -i PATH="$SYSTEM_PATH" HOME="$HOME" USER="$(id -un)" "$(nix_bin)" "$@"
-}
-fail() {
-  printf '::error::%s\n' "$1"
-  exit 1
 }
 
 conf=$ROOT/etc/nix/nix.conf
