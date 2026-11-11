@@ -34,7 +34,7 @@ jobs:
           persist-credentials: false
       # The library that the steps use, at the commit that action.yml pins.
       - id: lib
-        uses: flakeyard/action-shell-lib@4c8422d8a7fdb2b097b349f643efa8d196e0406b # v0.1.2
+        uses: flakeyard/action-shell-lib@f49e13a81812082d44a37a1b585f8a69edb76d83 # v0.1.3
       - env:
           SHELL_LIB: ${{ steps.lib.outputs.path }}
         run: tests/run.sh
@@ -52,7 +52,7 @@ jobs:
       # report.sh of the library for the checks below, at the commit that
       # action.yml pins.
       - id: lib
-        uses: flakeyard/action-shell-lib@4c8422d8a7fdb2b097b349f643efa8d196e0406b # v0.1.2
+        uses: flakeyard/action-shell-lib@f49e13a81812082d44a37a1b585f8a69edb76d83 # v0.1.3
       # Checks the pinned tarballs against the signed store paths of
       # cache.nixos.org; fails if versions.sh would change.
       - run: tests/ci/pinned/check.sh
@@ -78,7 +78,7 @@ jobs:
       # report.sh of the library for the checks below, at the commit that
       # action.yml pins.
       - id: lib
-        uses: flakeyard/action-shell-lib@4c8422d8a7fdb2b097b349f643efa8d196e0406b # v0.1.2
+        uses: flakeyard/action-shell-lib@f49e13a81812082d44a37a1b585f8a69edb76d83 # v0.1.3
 
       - id: setup
         uses: $/
@@ -125,7 +125,7 @@ jobs:
       # report.sh of the library for the checks below, at the commit that
       # action.yml pins.
       - id: lib
-        uses: flakeyard/action-shell-lib@4c8422d8a7fdb2b097b349f643efa8d196e0406b # v0.1.2
+        uses: flakeyard/action-shell-lib@f49e13a81812082d44a37a1b585f8a69edb76d83 # v0.1.3
       - uses: $/
         with:
           github-token: ""
@@ -146,7 +146,7 @@ jobs:
       # report.sh of the library for the checks below, at the commit that
       # action.yml pins.
       - id: lib
-        uses: flakeyard/action-shell-lib@4c8422d8a7fdb2b097b349f643efa8d196e0406b # v0.1.2
+        uses: flakeyard/action-shell-lib@f49e13a81812082d44a37a1b585f8a69edb76d83 # v0.1.3
       - uses: $/
         with:
           github-token: ghs_invalid0000000000000000000000000000
@@ -172,7 +172,7 @@ jobs:
       # report.sh of the library for the checks below, at the commit that
       # action.yml pins.
       - id: lib
-        uses: flakeyard/action-shell-lib@4c8422d8a7fdb2b097b349f643efa8d196e0406b # v0.1.2
+        uses: flakeyard/action-shell-lib@f49e13a81812082d44a37a1b585f8a69edb76d83 # v0.1.3
       - name: Export functions and shell options
         run: tests/ci/hostile-environment/github-env.sh
       # Last before the action: bash and env on PATH are fakes from here on.
