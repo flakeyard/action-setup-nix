@@ -22,7 +22,7 @@ review_by:
 
 This record moves [FY-0023][fy-0023] from [flakeyard/decisions][decisions]
 unchanged in substance. Records there that also govern this repository include
-[FY-0024][fy-0024] (versioning and support) and [FY-0026][fy-0026] (the order of
+[FY-0024][fy-0024] (versioning and support) and [FY-0036][fy-0036] (the order of
 Nix minor updates of this action and the image).
 
 CI runs on GitHub-hosted runners with Nix installed by `action-setup-nix`, in
@@ -223,7 +223,7 @@ an update of the runner images can break the action without a release.
   https://github.com/flakeyard/decisions/blob/main/docs/adr/records/0023-setup-nix.md
 [fy-0024]:
   https://github.com/flakeyard/decisions/blob/main/docs/adr/records/0024-versioning-and-support.md
-[fy-0026]:
-  https://github.com/flakeyard/decisions/blob/main/docs/adr/records/0026-stable-nixpkgs.md
 [fy-0030]:
   https://github.com/flakeyard/decisions/blob/main/docs/adr/records/0030-actions-workflows-and-release-bot.md
+[fy-0036]:
+  https://github.com/flakeyard/decisions/blob/main/docs/adr/records/0036-check-the-end-of-life-of-nixpkgs-in-flake-lock.md
