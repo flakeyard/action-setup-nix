@@ -135,6 +135,13 @@ release. See [VERSIONING][versioning].
 
 ## Maintenance
 
+Open the repository in its dev container,
+[`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json), with
+"Reopen in Container" in VS Code or `devcontainer up --workspace-folder .`. It
+has Nix, and the tests and checks below run in it as in CI; tools that the image
+does not have come from nixpkgs, such as `nix run nixpkgs#actionlint`. Nix on
+the host works as well.
+
 To update Nix, run `scripts/update/nix.sh VERSION`; it needs `curl`, `openssl`,
 `python3`, `tar` and `xz`, not Nix. For the tarball of every system, it:
 
@@ -166,7 +173,7 @@ action-shell-lib from `SHELL_LIB`, which the CI sets, or else fetch it with
 `git` at the commit that `action.yml` pins, into
 `~/.cache/flakeyard/action-shell-lib/`. They read `action.yml` with mikefarah
 `yq` v4, which GitHub-hosted runners have; elsewhere run
-`nix shell nixpkgs#yq-go -c tests/run.sh`.
+`nix shell nixpkgs#yq-go nixpkgs#jq nixpkgs#python3 nixpkgs#openssl -c tests/run.sh`.
 
 CI: [`test.yaml`](.github/workflows/test.yaml) runs the unit tests and the
 action on the supported runners and ends with [workflow-check][workflow-check],
