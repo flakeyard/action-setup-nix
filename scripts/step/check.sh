@@ -74,7 +74,7 @@ previous_nix_traces() {
   if [[ -r $ROOT/etc/group ]] && grep -q '^nixbld:' "$ROOT/etc/group"; then
     echo "group nixbld"
   fi
-  if PATH=$JOB_PATH command -v nix >/dev/null; then
+  if job_tool nix &>/dev/null; then
     echo "nix on PATH"
   fi
   if [[ -e $(user_conf) ]]; then

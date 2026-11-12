@@ -19,12 +19,12 @@ fake_job_tools() {
 }
 
 # run_with_job_path NAME STEP [VAR=VALUE...]: runs step/STEP.sh like
-# action.yml does, with the fake tools first on PATH, and checks that it ran
-# none of them.
+# action.yml does, with the fake tools first on PATH and the variables that
+# earlier steps can set to run code, and checks that it ran none of them.
 run_with_job_path() {
   local name=$1 step=$2
   fake_job_tools
-  run_step "$name" ok "$step" "${@:3}" \
+  run_hostile "$name" ok "$action" "$step" "${@:3}" \
     PATH="$work/job-bin:$root/tests/harness/stub:$sysbin"
   [[ -z $current || ! -e $work/job-tools-ran ]] ||
     report "ran tools of the job PATH: $(paste -sd';' "$work/job-tools-ran")"

@@ -67,7 +67,7 @@ expect message "::error::$fs/etc/nix/nix.conf was not installed."
 finish
 
 setup_action
-install "verify: no tools of the job PATH"
-run_with_job_path "verify: no tools of the job PATH" verify
+install "verify: no tools of the job PATH and no code of its environment"
+run_with_job_path "verify: no tools of the job PATH and no code of its environment" verify
 expect output nix-version "$NIX_VERSION"
 finish

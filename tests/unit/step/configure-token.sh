@@ -21,5 +21,5 @@ expect_file "$work/home/.config/nix/nix.conf" "accept-flake-config = true"
 finish
 
 setup_action
-run_with_job_path "token: no tools of the job PATH" configure-token TOKEN=ghs_abc
+run_with_job_path "token: no tools of the job PATH and no code of its environment" configure-token TOKEN=ghs_abc
 finish
