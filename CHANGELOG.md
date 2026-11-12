@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.6](https://github.com/flakeyard/action-setup-nix/compare/v0.1.5...v0.1.6) (2026-11-12)
+
+
+### Bug Fixes
+
+* adopt job_tool and the step helpers of action-shell-lib v0.3.0 ([#87](https://github.com/flakeyard/action-setup-nix/issues/87)) ([72016df](https://github.com/flakeyard/action-setup-nix/commit/72016dfa5389a07ca8e47df2389853f9ac4cb0fa))
+* **deps:** update flakeyard/action-shell-lib action to v0.2.0 ([#84](https://github.com/flakeyard/action-setup-nix/issues/84)) ([ed0ecb2](https://github.com/flakeyard/action-setup-nix/commit/ed0ecb2d1fc4356503da0743b407418fbd726b37))
+
 ## [0.1.5](https://github.com/flakeyard/action-setup-nix/compare/v0.1.4...v0.1.5) (2026-11-11)
 
 
