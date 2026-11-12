@@ -19,11 +19,11 @@ setup_action() {
     SHELL_LIB="$shell_lib"
 }
 
-# copy_action: the scripts and versions.sh in $action, which downloads from
-# example.test and looks at $fs instead of the host.
+# copy_action: action.yml, the scripts and versions.sh in $action, which
+# downloads from example.test and looks at $fs instead of the host.
 copy_action() {
   mkdir -p "$action"
-  cp -R "$root/scripts" "$root/versions.sh" "$action/"
+  cp -R "$root/action.yml" "$root/scripts" "$root/versions.sh" "$action/"
   sed -i -e "s|^NIX_BASE_URL=.*|NIX_BASE_URL=https://example.test/nix|" "$action/versions.sh"
   redirect_lib_paths
 }

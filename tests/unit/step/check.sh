@@ -196,5 +196,5 @@ done
 # --- job PATH -----------------------------------------------------
 
 setup_action
-run_with_job_path "check: no tools of the job PATH" check
+run_with_job_path "check: no tools of the job PATH and no code of its environment" check
 finish

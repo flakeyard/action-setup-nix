@@ -53,6 +53,6 @@ expect message "::error::The Nix installer failed"
 finish
 
 setup_action
-run_with_job_path "install: no tools of the job PATH" install
+run_with_job_path "install: no tools of the job PATH and no code of its environment" install
 expect_path "$fs/nix/var/nix/profiles/default/bin"
 finish

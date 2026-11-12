@@ -20,6 +20,12 @@ source "$SHELL_LIB/internal/testing/yaml.sh"
 source "$SHELL_LIB/internal/testing/consumer/library.sh"
 # shellcheck source=/dev/null
 source "$SHELL_LIB/internal/testing/consumer/action.sh"
+# shellcheck source=/dev/null
+source "$SHELL_LIB/internal/testing/consumer/step.sh"
+# The variables of the stubs of tests/harness/stub, which a step passes on to
+# them.
+# shellcheck disable=SC2034 # read by internal/testing/consumer/step.sh
+stub_variables=(SUDO_FAILS)
 # The steps get a copy of the library whose SYSTEM_PATH is the tools of the
 # tests.
 shell_lib=$shared/shell-lib
@@ -37,9 +43,6 @@ require_yq action.yml || {
   conclude
   exit 1
 }
-ACTION_JSON=$(load_yaml action.yml)
-# shellcheck source-path=SCRIPTDIR source=harness/steps.sh
-source "$root/tests/harness/steps.sh"
 # shellcheck source-path=SCRIPTDIR source=harness/job-path.sh
 source "$root/tests/harness/job-path.sh"
 
