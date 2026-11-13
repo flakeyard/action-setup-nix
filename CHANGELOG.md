@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.7](https://github.com/flakeyard/action-setup-nix/compare/v0.1.6...v0.1.7) (2026-11-13)
+
+
+### Bug Fixes
+
+* **deps:** update flakeyard/action-shell-lib action to v0.3.1 ([#86](https://github.com/flakeyard/action-setup-nix/issues/86)) ([09935a8](https://github.com/flakeyard/action-setup-nix/commit/09935a8f0b5fcaa6828e81cc70a5b326e59e8fcf))
+
 ## [0.1.6](https://github.com/flakeyard/action-setup-nix/compare/v0.1.5...v0.1.6) (2026-11-12)
 
 
