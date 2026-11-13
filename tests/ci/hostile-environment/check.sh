@@ -14,7 +14,7 @@ done
 group=$(getent group nixbld) || fail "No group nixbld."
 IFS=: read -r _ _ gid members <<<"$group"
 IFS=, read -r -a users <<<"$members"
-[[ $gid == 30000 && ${#users[@]} == 32 ]] ||
-  fail "The installer took NIX_BUILD_GROUP_ID or NIX_USER_COUNT: GID $gid, ${#users[@]} build users."
+[[ $gid == 30000 && ${#users[@]} == 32 ]] \
+  || fail "The installer took NIX_BUILD_GROUP_ID or NIX_USER_COUNT: GID $gid, ${#users[@]} build users."
 grep -qx 'sandbox = true' /etc/nix/nix.conf || fail "NIX_CONFIG reached /etc/nix/nix.conf."
 echo "The job environment did not change the installation."
