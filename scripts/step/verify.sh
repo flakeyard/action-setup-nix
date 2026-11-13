@@ -24,22 +24,22 @@ conf=$ROOT/etc/nix/nix.conf
 [[ -r $conf ]] || fail "$conf was not installed."
 
 version=$(nix --version) || fail "nix --version failed."
-[[ $version == "nix (Nix) $NIX_VERSION" ]] ||
-  fail "Installed '$version', expected Nix $NIX_VERSION."
+[[ $version == "nix (Nix) $NIX_VERSION" ]] \
+  || fail "Installed '$version', expected Nix $NIX_VERSION."
 
 nix store info >/dev/null || fail "The Nix daemon does not answer."
 
 expected=$("$lib/nix-conf.sh")
 actual=$(<"$conf")
-[[ $actual == "$expected"$'\n'* ]] ||
-  fail "$conf does not start with the settings of this action."
+[[ $actual == "$expected"$'\n'* ]] \
+  || fail "$conf does not start with the settings of this action."
 while IFS= read -r line; do
-  [[ -z $line || $line == "build-users-group = nixbld" ]] ||
-    fail "Unexpected line in $conf: $line"
+  [[ -z $line || $line == "build-users-group = nixbld" ]] \
+    || fail "Unexpected line in $conf: $line"
 done <<<"${actual#"$expected"}"
 
-[[ $(nix config show sandbox) == true && $(nix config show sandbox-fallback) == false ]] ||
-  fail "The sandbox is not enabled."
+[[ $(nix config show sandbox) == true && $(nix config show sandbox-fallback) == false ]] \
+  || fail "The sandbox is not enabled."
 
 echo "Installed Nix $NIX_VERSION."
 echo "nix-version=$NIX_VERSION" >>"$GITHUB_OUTPUT"

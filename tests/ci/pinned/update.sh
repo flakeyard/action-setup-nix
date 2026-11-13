@@ -31,8 +31,8 @@ sed -i -e "s/^NIX_VERSION=.*/NIX_VERSION=$previous/" \
 # before it compares their installer scripts.
 for system in "${SYSTEMS[@]}"; do
   hash=$("${HTTPS_CURL[@]}" "$(tarball_url "$previous" "$system").sha256")
-  [[ $hash =~ $SHA256_RE ]] ||
-    fail "Invalid published SHA-256 of Nix $previous for $system: $hash"
+  [[ $hash =~ $SHA256_RE ]] \
+    || fail "Invalid published SHA-256 of Nix $previous for $system: $hash"
   var=$(pin_var "$system")
   sed -i "s/^$var=.*/$var=$hash/" "$work/versions.sh"
 done

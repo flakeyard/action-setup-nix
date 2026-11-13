@@ -64,8 +64,8 @@ with_pin() {
 check_tarball_hash() {
   local file=$1 expected=$2 name=$3 source=$4 actual
   actual=$(sha256_of "$file")
-  [[ $actual == "$expected" ]] ||
-    fail "$name has SHA-256 $actual, $source $expected"
+  [[ $actual == "$expected" ]] \
+    || fail "$name has SHA-256 $actual, $source $expected"
 }
 
 # unpack_installer TARBALL DIR TOP: unpacks TARBALL into DIR without TOP/store,

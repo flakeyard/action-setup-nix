@@ -1,3 +1,4 @@
+# shellcheck shell=sh # run as "sh no-network.sh" and as the builder /bin/sh, not executed
 # Fails when a network interface other than lo is visible. The builder of the
 # fixture's check, and run on the runner itself to show that it can fail. In
 # the Nix sandbox, /bin/sh is a minimal busybox: only shell builtins.
