@@ -18,9 +18,9 @@ load_library() {
   commit=${BASH_REMATCH[1]}
   export SHELL_LIB=${XDG_CACHE_HOME:-$HOME/.cache}/flakeyard/action-shell-lib/$commit
   # HEAD is set once the checkout is complete, so a failed fetch is repeated.
-  git -C "$SHELL_LIB" rev-parse -q --verify HEAD &>/dev/null || { git init -q "$SHELL_LIB" &&
-    git -C "$SHELL_LIB" fetch -q --depth 1 "$LIBRARY_URL" "$commit" &&
-    git -C "$SHELL_LIB" checkout -qf FETCH_HEAD; } || exit 2
+  git -C "$SHELL_LIB" rev-parse -q --verify HEAD &>/dev/null || { git init -q "$SHELL_LIB" \
+    && git -C "$SHELL_LIB" fetch -q --depth 1 "$LIBRARY_URL" "$commit" \
+    && git -C "$SHELL_LIB" checkout -qf FETCH_HEAD; } || exit 2
 }
 
 load_library "$root/action.yml"

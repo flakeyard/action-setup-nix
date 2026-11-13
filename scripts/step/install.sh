@@ -29,8 +29,8 @@ echo "Downloading $url"
   --output "$work/nix.tar.xz" "$url"
 
 actual=$(sha256_of "$work/nix.tar.xz")
-[[ $actual == "$expected" ]] ||
-  fail "SHA-256 of $url is $actual, expected $expected; nothing was installed."
+[[ $actual == "$expected" ]] \
+  || fail "SHA-256 of $url is $actual, expected $expected; nothing was installed."
 
 tar --extract --xz --file "$work/nix.tar.xz" --directory "$work"
 "$lib/nix-conf.sh" >"$work/nix.conf"
@@ -41,7 +41,7 @@ user=$(id -un)
 env -i PATH="$SYSTEM_PATH" HOME="$HOME" USER="$user" \
   LC_ALL=C TMPDIR="$work" \
   "$work/$name/install" --daemon --yes --no-channel-add \
-  --nix-extra-conf-file "$work/nix.conf" ||
-  fail "The Nix installer failed; see its output above."
+  --nix-extra-conf-file "$work/nix.conf" \
+  || fail "The Nix installer failed; see its output above."
 
 dirname -- "$(nix_bin)" >>"$GITHUB_PATH"

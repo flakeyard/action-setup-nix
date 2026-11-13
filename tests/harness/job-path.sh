@@ -26,6 +26,6 @@ run_with_job_path() {
   fake_job_tools
   run_hostile "$name" ok "$action" "$step" "${@:3}" \
     PATH="$work/job-bin:$root/tests/harness/stub:$sysbin"
-  [[ -z $current || ! -e $work/job-tools-ran ]] ||
-    report "ran tools of the job PATH: $(paste -sd';' "$work/job-tools-ran")"
+  [[ -z $current || ! -e $work/job-tools-ran ]] \
+    || report "ran tools of the job PATH: $(paste -sd';' "$work/job-tools-ran")"
 }

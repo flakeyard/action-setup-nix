@@ -34,10 +34,10 @@ runs_on_host_with_systemd() {
 }
 
 check_runner() {
-  runs_on_host_with_systemd ||
-    problem "The Nix daemon needs systemd: run the job directly on the runner, not in a container."
-  sudo -n true 2>/dev/null ||
-    problem "The installation needs passwordless sudo."
+  runs_on_host_with_systemd \
+    || problem "The Nix daemon needs systemd: run the job directly on the runner, not in a container."
+  sudo -n true 2>/dev/null \
+    || problem "The installation needs passwordless sudo."
 }
 
 # is_tested_ubuntu OS: OS, as ID/VERSION_ID, is an Ubuntu release that the CI
@@ -55,8 +55,8 @@ warn_if_untested_os() {
   [[ -r $ROOT/etc/os-release ]] || return 0
   # shellcheck disable=SC1091 # the runner's file
   os=$(. "$ROOT/etc/os-release" && echo "${ID-}/${VERSION_ID-}")
-  is_tested_ubuntu "$os" ||
-    warning "This action is not tested on $os; tested: Ubuntu ${TESTED_UBUNTU[*]}."
+  is_tested_ubuntu "$os" \
+    || warning "This action is not tested on $os; tested: Ubuntu ${TESTED_UBUNTU[*]}."
 }
 
 # Nix installed before.
@@ -96,8 +96,8 @@ check_clean_runner() {
 check_substituters() {
   local url
   for url in "$@"; do
-    [[ $url =~ $SUBSTITUTER_RE ]] ||
-      problem "Invalid extra substituter '$(shown "$url")': expected an https URL without user information, query or fragment."
+    [[ $url =~ $SUBSTITUTER_RE ]] \
+      || problem "Invalid extra substituter '$(shown "$url")': expected an https URL without user information, query or fragment."
   done
 }
 
@@ -105,8 +105,8 @@ check_substituters() {
 check_keys() {
   local key
   for key in "$@"; do
-    [[ $key =~ $PUBLIC_KEY_RE ]] ||
-      problem "Invalid extra trusted public key '$(shown "$key")': expected <name>:<base64 Ed25519 key>."
+    [[ $key =~ $PUBLIC_KEY_RE ]] \
+      || problem "Invalid extra trusted public key '$(shown "$key")': expected <name>:<base64 Ed25519 key>."
   done
 }
 

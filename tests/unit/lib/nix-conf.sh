@@ -19,8 +19,8 @@ finish
 
 setup_action
 run "nix-conf: the README shows the settings" ok lib/nix-conf.sh
-[[ -z $current || $(grep -v '^#' "$work/stdout") == "$(readme_conf)" ]] ||
-  report "the README shows other settings: $(diff <(grep -v '^#' "$work/stdout") <(readme_conf))"
+[[ -z $current || $(grep -v '^#' "$work/stdout") == "$(readme_conf)" ]] \
+  || report "the README shows other settings: $(diff <(grep -v '^#' "$work/stdout") <(readme_conf))"
 finish
 
 setup_action
