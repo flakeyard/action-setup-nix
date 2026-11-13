@@ -34,7 +34,7 @@ runs:
   using: composite
   steps:
     - id: lib
-      uses: flakeyard/action-shell-lib@d2f4905ffa8bcea6bb6be2928d90db9037d5bdef # v0.3.0
+      uses: flakeyard/action-shell-lib@5c59164109499a225af9b75488caf142802add84 # v0.3.1
 
     - name: Check the runner and inputs
       shell: /usr/bin/bash --noprofile --norc -p -e -o pipefail {0}
