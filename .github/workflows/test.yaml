@@ -264,6 +264,6 @@ jobs:
       statuses: write # commit statuses of dispatched runs
     with:
       needs: ${{ toJSON(needs) }}
-      # No flake yet: the checks of the atoms run locally (README, Bootstrap).
-      flake: ""
+      flake: .
+      expect-checks: '["workflows"]'
       renovate-presets: '["flakeyard/renovate-config"]'
