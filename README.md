@@ -140,8 +140,8 @@ Open the repository in its dev container,
 [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json), with
 "Reopen in Container" in VS Code or `devcontainer up --workspace-folder .`. It
 has Nix, and the tests and checks below run in it as in CI; tools that the image
-does not have come from nixpkgs, such as `nix run nixpkgs#actionlint`. Nix on
-the host works as well.
+does not have come from nixpkgs, such as `nix run nixpkgs#typos`. Nix on the
+host works as well.
 
 To update Nix, run `scripts/update/nix.sh VERSION`; it needs `curl`, `openssl`,
 `python3`, `tar` and `xz`, not Nix. For the tarball of every system, it:
@@ -176,10 +176,14 @@ action-shell-lib from `SHELL_LIB`, which the CI sets, or else fetch it with
 `yq` v4, which GitHub-hosted runners have; elsewhere run
 `nix shell nixpkgs#yq-go nixpkgs#jq nixpkgs#python3 nixpkgs#openssl -c tests/run.sh`.
 
+Checks: [`flake.nix`](flake.nix) only imports atoms ([FY-0038][fy-0038]):
+[atom-workflows][atom-workflows] lints the workflows and `action.yml` with
+actionlint and zizmor (`checks.workflows`). Run them with `nix flake check`.
+
 CI: [`test.yaml`](.github/workflows/test.yaml) runs the unit tests and the
 action on the supported runners and ends with [workflow-check][workflow-check],
-which checks the pull request title and `renovate.json` and reports
-`check / required` over every job.
+which checks `flake.lock`, builds the checks of the flake, checks the pull
+request title and `renovate.json` and reports `check / required` over every job.
 [`scorecard.yaml`](.github/workflows/scorecard.yaml) runs OpenSSF Scorecard with
 [workflow-scorecard][workflow-scorecard]. Releases go through
 [`release.yaml`](.github/workflows/release.yaml), whose release pull requests
@@ -190,14 +194,15 @@ are checked by a dispatched run of `test.yaml`.
 This repository is bootstrapped under [FY-0022][fy-0022]. Until their providers
 are released:
 
-- actionlint, zizmor, shellcheck, shfmt, Prettier and the other checks of the
-  atoms run locally before every pull request (provider: the atoms).
+- shellcheck, shfmt, Prettier and the other checks of the atoms that are not
+  released yet run locally before every pull request (provider: the atoms).
 
 ## License
 
 [MIT](LICENSE).
 
 [action-shell-lib]: https://github.com/flakeyard/action-shell-lib
+[atom-workflows]: https://github.com/flakeyard/atom-workflows
 [nix]: https://github.com/NixOS/nix
 [scorecard-badge]:
   https://api.scorecard.dev/projects/github.com/flakeyard/action-setup-nix/badge
@@ -208,3 +213,5 @@ are released:
 [workflow-scorecard]: https://github.com/flakeyard/workflow-scorecard
 [fy-0022]:
   https://github.com/flakeyard/decisions/blob/main/docs/adr/records/0022-bootstrap.md
+[fy-0038]:
+  https://github.com/flakeyard/decisions/blob/main/docs/adr/records/0038-roll-out-the-atoms.md
