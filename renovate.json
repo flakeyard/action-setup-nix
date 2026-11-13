@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>flakeyard/renovate-config//internal/action#v0.2.2"],
+  "extends": ["github>flakeyard/renovate-config//internal/action#v0.2.3"],
   "packageRules": [
     {
       "description": "The root flake only imports atoms and checks this repository; consumers do not receive it (FY-0038)",
