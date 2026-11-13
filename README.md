@@ -11,6 +11,7 @@ sandbox on and only the binary caches you name.
 ```yaml
 jobs:
   check:
+    name: check
     runs-on: ubuntu-24.04
     permissions:
       contents: read
