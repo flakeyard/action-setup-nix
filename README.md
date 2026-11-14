@@ -138,10 +138,18 @@ release. See [VERSIONING][versioning].
 
 Open the repository in its dev container,
 [`.devcontainer/devcontainer.json`](.devcontainer/devcontainer.json), with
-"Reopen in Container" in VS Code or `devcontainer up --workspace-folder .`. It
-has Nix, and the tests and checks below run in it as in CI; tools that the image
-does not have come from nixpkgs, such as `nix run nixpkgs#typos`. Nix on the
-host works as well.
+"Reopen in Container" in VS Code or `devcontainer up --workspace-folder .`.
+`direnv` loads the development shell of [`flake.nix`](flake.nix) through
+[`.envrc`](.envrc) ([FY-0012][fy-0012]): [atom-workspace][atom-workspace] joins
+the tools of the atoms and `jq`, mikefarah `yq`, `python3` and `openssl` for
+`tests/run.sh`, and installs the git hooks each time the shell starts. The
+container runs `direnv allow` when it is created; run it once in every other
+worktree, and run `direnv block` before you check out a branch you do not trust,
+since entering the directory runs that branch's shell hook. Commit inside the
+container, whose Nix store has the tools of the hooks. The tests and checks
+below run in it as in CI; tools that the shell does not have come from nixpkgs,
+such as `nix run nixpkgs#typos`. Nix on the host works as well: `direnv allow`
+or `nix develop` gives the same shell.
 
 To update Nix, run `scripts/update/nix.sh VERSION`; it needs `curl`, `openssl`,
 `python3`, `tar` and `xz`, not Nix. For the tarball of every system, it:
@@ -173,8 +181,7 @@ job of the CI runs on real runners after the action. The tests take
 action-shell-lib from `SHELL_LIB`, which the CI sets, or else fetch it with
 `git` at the commit that `action.yml` pins, into
 `~/.cache/flakeyard/action-shell-lib/`. They read `action.yml` with mikefarah
-`yq` v4, which GitHub-hosted runners have; elsewhere run
-`nix shell nixpkgs#yq-go nixpkgs#jq nixpkgs#python3 nixpkgs#openssl -c tests/run.sh`.
+`yq` v4, which GitHub-hosted runners and the development shell have.
 
 Checks: [`flake.nix`](flake.nix) only imports atoms ([FY-0038][fy-0038]):
 [atom-workflows][atom-workflows] lints the workflows and `action.yml` with
@@ -215,3 +222,6 @@ are released:
   https://github.com/flakeyard/decisions/blob/main/docs/adr/records/0022-bootstrap.md
 [fy-0038]:
   https://github.com/flakeyard/decisions/blob/main/docs/adr/records/0038-roll-out-the-atoms.md
+[atom-workspace]: https://github.com/flakeyard/atom-workspace
+[fy-0012]:
+  https://github.com/flakeyard/decisions/blob/main/docs/adr/records/0012-develop-in-container.md
