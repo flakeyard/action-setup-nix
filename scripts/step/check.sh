@@ -34,6 +34,7 @@ runs_on_host_with_systemd() {
 }
 
 check_runner() {
+  # shellcheck disable=SC2310 # a predicate of one test, false is no error.
   runs_on_host_with_systemd \
     || problem "The Nix daemon needs systemd: run the job directly on the runner, not in a container."
   sudo -n true 2>/dev/null \
@@ -55,6 +56,7 @@ warn_if_untested_os() {
   [[ -r ${ROOT}/etc/os-release ]] || return 0
   # shellcheck disable=SC1091 # the runner's file
   os=$(. "${ROOT}/etc/os-release" && echo "${ID-}/${VERSION_ID-}")
+  # shellcheck disable=SC2310 # a predicate of tests only, false is no error.
   is_tested_ubuntu "${os}" \
     || warning "This action is not tested on ${os}; tested: Ubuntu ${TESTED_UBUNTU[*]}."
 }
@@ -64,7 +66,7 @@ warn_if_untested_os() {
 # previous_nix_traces: prints what an earlier installation of Nix left on the
 # runner, one per line.
 previous_nix_traces() {
-  local path
+  local path conf
   for path in "${ROOT}"/{nix,etc/nix,etc/xdg/nix} \
     "${ROOT}"/etc/systemd/system/nix-daemon.* "${ROOT}"/etc/*.backup-before-nix; do
     if [[ -e ${path} ]]; then
@@ -77,14 +79,16 @@ previous_nix_traces() {
   if job_tool nix &>/dev/null; then
     echo "nix on PATH"
   fi
-  if [[ -e $(user_conf) ]]; then
-    user_conf
+  conf=$(user_conf)
+  if [[ -e ${conf} ]]; then
+    printf '%s\n' "${conf}"
   fi
 }
 
 check_clean_runner() {
-  local found=()
-  mapfile -t found < <(previous_nix_traces)
+  local traces found=()
+  traces=$(previous_nix_traces)
+  [[ -z ${traces} ]] || mapfile -t found <<<"${traces}"
   if ((${#found[@]})); then
     problem "Nix was installed on this runner before (found: ${found[*]}); this action installs Nix only on a clean runner, once per job."
   fi
@@ -94,19 +98,21 @@ check_clean_runner() {
 
 # check_substituters URL...
 check_substituters() {
-  local url
+  local url value
   for url in "$@"; do
-    [[ ${url} =~ ${SUBSTITUTER_RE} ]] \
-      || problem "Invalid extra substituter '$(shown "${url}")': expected an https URL without user information, query or fragment."
+    [[ ${url} =~ ${SUBSTITUTER_RE} ]] && continue
+    value=$(shown "${url}")
+    problem "Invalid extra substituter '${value}': expected an https URL without user information, query or fragment."
   done
 }
 
 # check_keys KEY...
 check_keys() {
-  local key
+  local key value
   for key in "$@"; do
-    [[ ${key} =~ ${PUBLIC_KEY_RE} ]] \
-      || problem "Invalid extra trusted public key '$(shown "${key}")': expected <name>:<base64 Ed25519 key>."
+    [[ ${key} =~ ${PUBLIC_KEY_RE} ]] && continue
+    value=$(shown "${key}")
+    problem "Invalid extra trusted public key '${value}': expected <name>:<base64 Ed25519 key>."
   done
 }
 
@@ -133,8 +139,8 @@ check_token() {
 
 main() {
   local substituters=() keys=()
-  mapfile -t substituters < <(words "${SUBSTITUTERS-}")
-  mapfile -t keys < <(words "${KEYS-}")
+  words substituters "${SUBSTITUTERS-}"
+  words keys "${KEYS-}"
   check_runner
   warn_if_untested_os
   check_clean_runner

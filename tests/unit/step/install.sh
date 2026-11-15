@@ -8,11 +8,14 @@ run "install: installs the pinned tarball" ok step/install.sh \
 expect call "curl https://example.test/nix/nix-${NIX_VERSION}/nix-${NIX_VERSION}-x86_64-linux.tar.xz"
 expect call "install --daemon --yes --no-channel-add --nix-extra-conf-file"
 expect_path "${fs}/nix/var/nix/profiles/default/bin"
-if [[ -n ${current} ]] && grep -qE '^(NIX_|CALLS|FIXTURES|GITHUB_)' "${work}/installer-env"; then
-  report "the installer got the job environment: $(grep -E '^(NIX_|CALLS|FIXTURES|GITHUB_)' "${work}/installer-env")"
+if [[ -n ${current} ]] && leaked=$(grep -E '^(NIX_|CALLS|FIXTURES|GITHUB_)' "${work}/installer-env"); then
+  report "the installer got the job environment: ${leaked}"
 fi
-expect_file "${fs}/etc/nix/nix.conf" "$(SHELL_LIB="${shell_lib}" "${action}/scripts/lib/nix-conf.sh")"$'\n'"build-users-group = nixbld"
-[[ -z ${current} || -z $(ls -A "${work}/temp") ]] || report "temporary files left: $(ls -A "${work}/temp")"
+conf=$(SHELL_LIB="${shell_lib}" "${action}/scripts/lib/nix-conf.sh")
+expect_file "${fs}/etc/nix/nix.conf" "${conf}"$'\n'"build-users-group = nixbld"
+if [[ -n ${current} ]] && left=$(ls -A "${work}/temp") && [[ -n ${left} ]]; then
+  report "temporary files left: ${left}"
+fi
 finish
 
 setup_action
@@ -23,7 +26,8 @@ expect call "curl https://example.test/nix/nix-${NIX_VERSION}/nix-${NIX_VERSION}
 finish
 
 setup_action
-echo tampered >>"$(tarball_fixture "${NIX_VERSION}" x86_64-linux)"
+fixture=$(tarball_fixture "${NIX_VERSION}" x86_64-linux)
+echo tampered >>"${fixture}"
 run "install: hash mismatch installs nothing" fail step/install.sh
 expect message "::error::SHA-256 of https://example.test/nix/nix-${NIX_VERSION}/nix-${NIX_VERSION}-x86_64-linux.tar.xz is"
 expect no-call "install --daemon"
@@ -31,7 +35,8 @@ expect no-call "install --daemon"
 finish
 
 setup_action
-rm "$(tarball_fixture "${NIX_VERSION}" x86_64-linux)"
+fixture=$(tarball_fixture "${NIX_VERSION}" x86_64-linux)
+rm "${fixture}"
 run "install: download failure" fail step/install.sh
 expect no-call "install --daemon"
 finish
@@ -39,7 +44,8 @@ finish
 setup_action
 run "install: extra caches reach nix.conf" ok step/install.sh \
   SUBSTITUTERS="https://cache.example.org" KEYS="${key}"
-expect_file "${fs}/etc/nix/nix.conf" "$(SHELL_LIB="${shell_lib}" SUBSTITUTERS="https://cache.example.org" KEYS="${key}" "${action}/scripts/lib/nix-conf.sh")"$'\n'"build-users-group = nixbld"
+conf=$(SHELL_LIB="${shell_lib}" SUBSTITUTERS="https://cache.example.org" KEYS="${key}" "${action}/scripts/lib/nix-conf.sh")
+expect_file "${fs}/etc/nix/nix.conf" "${conf}"$'\n'"build-users-group = nixbld"
 finish
 
 setup_action
@@ -48,8 +54,10 @@ repack_tarball "${NIX_VERSION}" x86_64-linux
 pin_tarball "${NIX_VERSION}" x86_64-linux
 run "install: installer failure" fail step/install.sh
 expect message "::error::The Nix installer failed"
-[[ -z ${current} || ! -s ${work}/path ]] || report "PATH was extended: $(cat "${work}/path")"
-[[ -z ${current} || -z $(ls -A "${work}/temp") ]] || report "temporary files left"
+[[ -z ${current} || ! -s ${work}/path ]] || report "PATH was extended: $(<"${work}/path")"
+if [[ -n ${current} ]] && left=$(ls -A "${work}/temp") && [[ -n ${left} ]]; then
+  report "temporary files left"
+fi
 finish
 
 setup_action

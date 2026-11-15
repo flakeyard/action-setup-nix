@@ -13,21 +13,21 @@ source "${lib}/runner.sh"
 # shellcheck source=/dev/null # the library, from SHELL_LIB
 source "${SHELL_LIB}/report.sh"
 
-# Only the runner user's own settings, not those of the job environment, such
-# as NIX_CONFIG.
-nix() {
-  env -i PATH="${SYSTEM_PATH}" HOME="${HOME}" USER="$(id -un)" "$(nix_bin)" "$@"
-}
+nix_path=$(nix_bin)
+user=$(id -un)
+# The installed nix with only the runner user's own settings, not those of the
+# job environment, such as NIX_CONFIG.
+nix=(env -i PATH="${SYSTEM_PATH}" HOME="${HOME}" USER="${user}" "${nix_path}")
 
 conf=${ROOT}/etc/nix/nix.conf
-[[ -x $(nix_bin) ]] || fail "$(nix_bin) was not installed."
+[[ -x ${nix_path} ]] || fail "${nix_path} was not installed."
 [[ -r ${conf} ]] || fail "${conf} was not installed."
 
-version=$(nix --version) || fail "nix --version failed."
+version=$("${nix[@]}" --version) || fail "nix --version failed."
 [[ ${version} == "nix (Nix) ${NIX_VERSION}" ]] \
   || fail "Installed '${version}', expected Nix ${NIX_VERSION}."
 
-nix store info >/dev/null || fail "The Nix daemon does not answer."
+"${nix[@]}" store info >/dev/null || fail "The Nix daemon does not answer."
 
 expected=$("${lib}/nix-conf.sh")
 actual=$(<"${conf}")
@@ -38,7 +38,10 @@ while IFS= read -r line; do
     || fail "Unexpected line in ${conf}: ${line}"
 done <<<"${actual#"${expected}"}"
 
-[[ $(nix config show sandbox) == true && $(nix config show sandbox-fallback) == false ]] \
+sandbox=$("${nix[@]}" config show sandbox) || fail "nix config show sandbox failed."
+fallback=$("${nix[@]}" config show sandbox-fallback) \
+  || fail "nix config show sandbox-fallback failed."
+[[ ${sandbox} == true && ${fallback} == false ]] \
   || fail "The sandbox is not enabled."
 
 echo "Installed Nix ${NIX_VERSION}."

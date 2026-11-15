@@ -44,4 +44,5 @@ env -i PATH="${SYSTEM_PATH}" HOME="${HOME}" USER="${user}" \
   --nix-extra-conf-file "${work}/nix.conf" \
   || fail "The Nix installer failed; see its output above."
 
-dirname -- "$(nix_bin)" >>"${GITHUB_PATH}"
+nix_path=$(nix_bin)
+dirname -- "${nix_path}" >>"${GITHUB_PATH}"

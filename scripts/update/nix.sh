@@ -98,7 +98,7 @@ show_installer_changes() {
 # check_system SYSTEM: checks the tarball of $version for SYSTEM and pins its
 # hash in $script.
 check_system() {
-  local system=$1 tarball published
+  local system=$1 tarball published var
   tarball=$(download "${version}" "${system}")
   published=$(published_sha256 "${version}" "${system}")
   check_tarball_hash "${tarball}" "${published}" "the tarball for ${system}" published
@@ -106,7 +106,8 @@ check_system() {
   if [[ ${version} != "${NIX_VERSION}" ]]; then
     show_installer_changes "${system}" "${tarball}"
   fi
-  script=$(with_pin "$(pin_var "${system}")" "${published}" <<<"${script}")
+  var=$(pin_var "${system}")
+  script=$(with_pin "${var}" "${published}" <<<"${script}")
 }
 
 update_readme() {

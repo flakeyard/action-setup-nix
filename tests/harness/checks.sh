@@ -5,7 +5,7 @@
 # expect_path ENTRY: the last run added ENTRY to GITHUB_PATH.
 expect_path() {
   [[ -n ${current} ]] || return 0
-  grep -qxF -- "$1" "${work}/path" || report "no PATH entry '$1' in: $(cat -- "${work}/path")"
+  grep -qxF -- "$1" "${work}/path" || report "no PATH entry '$1' in: $(<"${work}/path")"
 }
 
 # expect_file FILE CONTENT: FILE holds CONTENT.
@@ -17,5 +17,7 @@ expect_file() {
 # expect_mode FILE MODE: FILE has the octal mode MODE.
 expect_mode() {
   [[ -n ${current} ]] || return 0
-  [[ $(stat -c %a "$1") == "$2" ]] || report "$1 has mode $(stat -c %a "$1"), expected $2"
+  local mode
+  mode=$(stat -c %a "$1")
+  [[ ${mode} == "$2" ]] || report "$1 has mode ${mode}, expected $2"
 }

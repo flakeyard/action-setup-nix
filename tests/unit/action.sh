@@ -18,6 +18,7 @@ expect no-message "INJECTED"
 finish
 
 code_root=${root} check_action_steps action.yml
-yaml_check "$(code_root=${root} load_yaml action.yml)" "action: the library and the four steps of the action" \
+action_yaml=$(code_root=${root} load_yaml action.yml)
+yaml_check "${action_yaml}" "action: the library and the four steps of the action" \
   '.runs.steps | length == 5'
 code_root=${root} check_library_pins

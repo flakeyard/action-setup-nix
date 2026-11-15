@@ -22,8 +22,9 @@ tarball_name() {
 
 # tarball_url VERSION SYSTEM: prints the URL of a release tarball.
 tarball_url() {
-  local version=$1 system=$2
-  echo "${NIX_BASE_URL}/nix-${version}/$(tarball_name "${version}" "${system}").tar.xz"
+  local version=$1 system=$2 name
+  name=$(tarball_name "${version}" "${system}")
+  echo "${NIX_BASE_URL}/nix-${version}/${name}.tar.xz"
 }
 
 # pin_var SYSTEM: prints the name of the variable that pins the hash of the

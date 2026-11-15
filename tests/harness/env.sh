@@ -21,5 +21,6 @@ sysbin=${shared}/bin
 mkdir "${sysbin}"
 for tool in bash env sed grep cat cp mv rm mkdir mktemp dirname id chmod \
   sha256sum tar xz touch python3 openssl cmp diff; do
-  ln -s "$(command -v "${tool}")" "${sysbin}/${tool}"
+  tool_path=$(command -v "${tool}")
+  ln -s "${tool_path}" "${sysbin}/${tool}"
 done

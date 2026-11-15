@@ -12,26 +12,31 @@ source "${SHELL_LIB}/report.sh"
 echo "::group::Runner"
 # shellcheck disable=SC1091 # the runner's file
 . /etc/os-release
-echo "${PRETTY_NAME}, $(uname -m), XDG_CONFIG_HOME=${XDG_CONFIG_HOME-unset}"
+machine=$(uname -m)
+echo "${PRETTY_NAME}, ${machine}, XDG_CONFIG_HOME=${XDG_CONFIG_HOME-unset}"
 cat /etc/nix/nix.conf
 echo "::endgroup::"
 
-[[ $(command -v nix) == /nix/var/nix/profiles/default/bin/nix ]] \
-  || fail "nix on PATH is $(command -v nix)."
-[[ $(nix --version) == "nix (Nix) ${NIX_VERSION}" ]] \
-  || fail "nix --version is '$(nix --version)', the action reported ${NIX_VERSION}."
+nix_path=$(command -v nix) || fail "No nix on PATH."
+[[ ${nix_path} == /nix/var/nix/profiles/default/bin/nix ]] \
+  || fail "nix on PATH is ${nix_path}."
+version=$(nix --version) || fail "nix --version failed."
+[[ ${version} == "nix (Nix) ${NIX_VERSION}" ]] \
+  || fail "nix --version is '${version}', the action reported ${NIX_VERSION}."
 
 conf=${XDG_CONFIG_HOME:-${HOME}/.config}/nix/nix.conf
-[[ $(stat -c %a "${conf}") == 600 ]] || fail "${conf} has mode $(stat -c %a "${conf}")."
+mode=$(stat -c %a "${conf}") || fail "Cannot read the mode of ${conf}."
+[[ ${mode} == 600 ]] || fail "${conf} has mode ${mode}."
 grep -q '^access-tokens = github.com=' "${conf}" || fail "No token in ${conf}."
 
-[[ $(nix config show trusted-users) == root ]] \
-  || fail "trusted-users is '$(nix config show trusted-users)'."
+trusted_users=$(nix config show trusted-users)
+[[ ${trusted_users} == root ]] || fail "trusted-users is '${trusted_users}'."
 substituters=$(nix config show substituters)
 [[ ${substituters} == *https://cache.nixos.org/* && ${substituters} == *"${EXTRA_SUBSTITUTER}"* ]] \
   || fail "substituters are '${substituters}'."
-[[ $(nix config show sandbox-paths) == */bin/sh=* ]] \
-  || fail "The sandbox has no /bin/sh: $(nix config show sandbox-paths)."
+sandbox_paths=$(nix config show sandbox-paths)
+[[ ${sandbox_paths} == */bin/sh=* ]] \
+  || fail "The sandbox has no /bin/sh: ${sandbox_paths}."
 
 echo "::group::Substituter given on the command line"
 output=$(nix store info --option extra-substituters https://untrusted.invalid 2>&1) \
@@ -52,8 +57,9 @@ echo "::endgroup::"
 # the output of the action.
 previous=$(sed -n 's/^PREVIOUS_NIX_VERSION=//p' versions.sh)
 fallback_paths=https://releases.nixos.org/nix/nix-${previous}/fallback-paths.nix
+system=$(nix config show system)
 path=$(nix eval --raw --impure --expr \
-  "(import (builtins.fetchurl \"${fallback_paths}\")).$(nix config show system)") \
+  "(import (builtins.fetchurl \"${fallback_paths}\")).${system}") \
   || fail "No store path of Nix ${previous} in ${fallback_paths}."
 echo "::group::Substitution of ${path}"
 nix-store --realise "${path}" || fail "${path} was not substituted from cache.nixos.org."
