@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.1.8](https://github.com/flakeyard/action-setup-nix/compare/v0.1.7...v0.1.8) (2026-11-15)
+
+
+### Bug Fixes
+
+* **deps:** update flakeyard/action-shell-lib action to v0.3.2 ([#110](https://github.com/flakeyard/action-setup-nix/issues/110)) ([69eddd0](https://github.com/flakeyard/action-setup-nix/commit/69eddd0371ae5e0bd5650d6f1cad7cb4c98b3a73))
+* keep the exit codes of command substitutions and of functions under set -e ([#105](https://github.com/flakeyard/action-setup-nix/issues/105)) ([ca1655a](https://github.com/flakeyard/action-setup-nix/commit/ca1655a2744dfd3ea296fe05f923cadc2e6b1550))
+
 ## [0.1.7](https://github.com/flakeyard/action-setup-nix/compare/v0.1.6...v0.1.7) (2026-11-13)
 
 
