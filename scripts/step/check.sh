@@ -119,10 +119,10 @@ check_keys() {
 # check_cache_pairing SUBSTITUTER_COUNT KEY_COUNT
 check_cache_pairing() {
   local substituters=$1 keys=$2
-  if ((keys && ! substituters)); then
+  if ((keys && !substituters)); then
     problem "extra-trusted-public-keys is set without extra-substituters."
   fi
-  if ((substituters && ! keys)); then
+  if ((substituters && !keys)); then
     notice "Extra substituters without extra keys: their paths must be signed by cache.nixos.org."
   fi
 }

@@ -6,7 +6,7 @@
   nixConfig.extra-substituters = [ "https://untrusted.invalid" ];
 
   outputs =
-    { self }:
+    _:
     let
       systems = [
         "x86_64-linux"
