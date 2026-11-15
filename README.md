@@ -185,7 +185,11 @@ action-shell-lib from `SHELL_LIB`, which the CI sets, or else fetch it with
 
 Checks: [`flake.nix`](flake.nix) only imports atoms ([FY-0038][fy-0038]):
 [atom-workflows][atom-workflows] lints the workflows and `action.yml` with
-actionlint and zizmor (`checks.workflows`). Run them with `nix flake check`.
+actionlint and zizmor (`checks.workflows`). [atom-nix][atom-nix] lints the Nix
+files with statix, deadnix and its hook of relative paths (`checks.nix`),
+[atom-shell][atom-shell] lints the shell scripts with shellcheck
+(`checks.shell`), and treefmt checks their formatting with nixfmt and shfmt
+(`checks.treefmt`). Run them with `nix flake check`.
 
 CI: [`test.yaml`](.github/workflows/test.yaml) runs the unit tests and the
 action on the supported runners and ends with [workflow-check][workflow-check],
@@ -201,14 +205,16 @@ are checked by a dispatched run of `test.yaml`.
 This repository is bootstrapped under [FY-0022][fy-0022]. Until their providers
 are released:
 
-- shellcheck, shfmt, Prettier and the other checks of the atoms that are not
-  released yet run locally before every pull request (provider: the atoms).
+- Prettier and the other checks of the atoms that are not released yet run
+  locally before every pull request (provider: the atoms).
 
 ## License
 
 [MIT](LICENSE).
 
 [action-shell-lib]: https://github.com/flakeyard/action-shell-lib
+[atom-nix]: https://github.com/flakeyard/atom-nix
+[atom-shell]: https://github.com/flakeyard/atom-shell
 [atom-workflows]: https://github.com/flakeyard/atom-workflows
 [nix]: https://github.com/NixOS/nix
 [scorecard-badge]:
