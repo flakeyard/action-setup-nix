@@ -38,7 +38,9 @@ repack_tarball() {
 
 # fake_tarball VERSION SYSTEM [NIX_VERSION_OUTPUT]: a release tarball whose
 # installer records its arguments and environment, writes nix.conf like the
-# real one and installs a stub of nix.
+# real one and installs a stub of nix. The stub of nix fails "store info" when
+# $work/daemon-down exists, and "config show SETTING" when
+# $work/config-fails-SETTING exists.
 fake_tarball() {
   local version=$1 system=$2 reported=${3:-$1}
   local dir=${work}/tarball/nix-${version}-${system}
@@ -58,7 +60,13 @@ cat >"${fs}/nix/var/nix/profiles/default/bin/nix" <<'NIX'
 case "\$*" in
   --version) echo "nix (Nix) ${reported}" ;;
   "store info") [[ ! -e "${work}/daemon-down" ]] ;;
-  "config show "*) sed -n "s/^\$3 = //p" "${fs}/etc/nix/nix.conf" ;;
+  "config show "*)
+    if [[ -e "${work}/config-fails-\$3" ]]; then
+      echo "error: cannot read \$3" >&2
+      exit 1
+    fi
+    sed -n "s/^\$3 = //p" "${fs}/etc/nix/nix.conf"
+    ;;
   *) exit 1 ;;
 esac
 NIX

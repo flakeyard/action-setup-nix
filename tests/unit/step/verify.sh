@@ -40,6 +40,16 @@ run "verify: daemon down" fail step/verify.sh
 expect message "The Nix daemon does not answer"
 finish
 
+for setting in sandbox sandbox-fallback; do
+  setup_action
+  install "verify: config show ${setting} fails"
+  touch "${work}/config-fails-${setting}"
+  run "verify: config show ${setting} fails" fail step/verify.sh
+  expect message "::error::nix config show ${setting} failed."
+  expect no-message "The sandbox is not enabled."
+  finish
+done
+
 setup_action
 install "verify: extra line"
 echo "trusted-users = runner" >>"${fs}/etc/nix/nix.conf"
