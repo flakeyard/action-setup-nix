@@ -3,7 +3,7 @@
 # root of the file system and the pinned release. Sourced first, not run.
 
 # shellcheck source=/dev/null # the library, from SHELL_LIB
-source "$SHELL_LIB/env.sh"
+source "${SHELL_LIB}/env.sh"
 step_environment
 
 # Root of the file system. Only the tests change it, in their own copy of the
@@ -13,4 +13,4 @@ ROOT=
 
 ACTION_DIR=$(cd -- "${BASH_SOURCE[0]%/*}/../.." && pwd)
 # shellcheck source-path=SCRIPTDIR source=../../versions.sh
-source "$ACTION_DIR/versions.sh"
+source "${ACTION_DIR}/versions.sh"

@@ -10,13 +10,13 @@ expect no-message "::warning::"
 finish
 
 setup_action
-touch "$fs/.dockerenv"
+touch "${fs}/.dockerenv"
 run "check: container job" fail step/check.sh
 expect message "needs systemd"
 finish
 
 setup_action
-rmdir "$fs/run/systemd/system"
+rmdir "${fs}/run/systemd/system"
 run "check: no systemd" fail step/check.sh
 expect message "needs systemd"
 finish
@@ -27,13 +27,13 @@ expect message "passwordless sudo"
 finish
 
 setup_action
-printf 'ID=ubuntu\nVERSION_ID="28.04"\n' >"$fs/etc/os-release"
+printf 'ID=ubuntu\nVERSION_ID="28.04"\n' >"${fs}/etc/os-release"
 run "check: untested Ubuntu warns" ok step/check.sh
 expect message "::warning::This action is not tested on ubuntu/28.04"
 finish
 
 setup_action
-printf 'ID=ubuntu\nVERSION_ID="26.04"\n' >"$fs/etc/os-release"
+printf 'ID=ubuntu\nVERSION_ID="26.04"\n' >"${fs}/etc/os-release"
 run "check: Ubuntu 26.04 is tested" ok step/check.sh
 expect no-message "::warning::"
 finish
@@ -41,45 +41,45 @@ finish
 # --- Nix installed before -----------------------------------------
 
 setup_action
-mkdir "$fs/nix"
+mkdir "${fs}/nix"
 run "check: /nix exists" fail step/check.sh
 expect message "found: /nix"
 finish
 
 setup_action
-mkdir "$fs/etc/nix"
+mkdir "${fs}/etc/nix"
 run "check: /etc/nix exists" fail step/check.sh
 expect message "found: /etc/nix"
 finish
 
 setup_action
-echo "nixbld:x:30000:" >>"$fs/etc/group"
+echo "nixbld:x:30000:" >>"${fs}/etc/group"
 run "check: group nixbld exists" fail step/check.sh
 expect message "found: group nixbld"
 finish
 
 setup_action
-mkdir -p "$work/home/.config/nix"
-touch "$work/home/.config/nix/nix.conf"
+mkdir -p "${work}/home/.config/nix"
+touch "${work}/home/.config/nix/nix.conf"
 run "check: user nix.conf exists" fail step/check.sh
-expect message "found: $work/home/.config/nix/nix.conf"
+expect message "found: ${work}/home/.config/nix/nix.conf"
 finish
 
 setup_action
-mkdir -p "$work/xdg/nix" "$work/bin"
-touch "$work/xdg/nix/nix.conf"
-printf '#!/bin/sh\n' >"$work/bin/nix"
-chmod +x "$work/bin/nix"
+mkdir -p "${work}/xdg/nix" "${work}/bin"
+touch "${work}/xdg/nix/nix.conf"
+printf '#!/bin/sh\n' >"${work}/bin/nix"
+chmod +x "${work}/bin/nix"
 run "check: nix on PATH and XDG_CONFIG_HOME conf" fail step/check.sh \
-  XDG_CONFIG_HOME="$work/xdg" PATH="$work/bin:$root/tests/harness/stub:$sysbin"
-expect message "found: nix on PATH $work/xdg/nix/nix.conf"
+  XDG_CONFIG_HOME="${work}/xdg" PATH="${work}/bin:${root}/tests/harness/stub:${sysbin}"
+expect message "found: nix on PATH ${work}/xdg/nix/nix.conf"
 finish
 
 # --- inputs -------------------------------------------------------
 
 setup_action
 run "check: substituter and key" ok step/check.sh \
-  SUBSTITUTERS="https://cache.example.org" KEYS="$key"
+  SUBSTITUTERS="https://cache.example.org" KEYS="${key}"
 expect errors 0
 expect no-message "::notice::"
 finish
@@ -87,7 +87,7 @@ finish
 setup_action
 run "check: several, separated by newlines and spaces" ok step/check.sh \
   SUBSTITUTERS=$'https://a.example.org/\n  https://b.example.org:8443/x/y_z~1  ' \
-  KEYS=$'\n'"$key $key"$'\n'
+  KEYS=$'\n'"${key} ${key}"$'\n'
 expect errors 0
 finish
 
@@ -98,7 +98,7 @@ expect message "::notice::Extra substituters without extra keys"
 finish
 
 setup_action
-run "check: key without substituter" fail step/check.sh KEYS="$key"
+run "check: key without substituter" fail step/check.sh KEYS="${key}"
 expect message "extra-trusted-public-keys is set without extra-substituters"
 finish
 
@@ -107,7 +107,7 @@ for url in "http://cache.example.org" "https://cache.example.org?trusted=1" \
   "https://user:pw@cache.example.org" "s3://bucket" "https://" \
   "https://cache.example.org/a%20b" "file:///nix/store"; do
   setup_action
-  run "check: rejects substituter $url" fail step/check.sh SUBSTITUTERS="$url" KEYS="$key"
+  run "check: rejects substituter ${url}" fail step/check.sh SUBSTITUTERS="${url}" KEYS="${key}"
   # Workflow commands escape %, restated as an independent oracle.
   expect message "Invalid extra substituter '${url//%/%25}'"
   finish
@@ -115,7 +115,7 @@ done
 
 setup_action
 run "check: newline cannot add a setting" fail step/check.sh \
-  SUBSTITUTERS=$'https://cache.example.org\nrequire-sigs = false' KEYS="$key"
+  SUBSTITUTERS=$'https://cache.example.org\nrequire-sigs = false' KEYS="${key}"
 expect message "Invalid extra substituter 'require-sigs'"
 expect message "Invalid extra substituter '='"
 finish
@@ -123,7 +123,7 @@ finish
 for bad in "cache.example.org-1:short=" "no-colon" "a:$(printf 'k%.0s' {1..43})" \
   "a b:$(printf 'k%.0s' {1..43})=" "x:$(printf 'k%.0s' {1..43})=#"; do
   setup_action
-  run "check: rejects key $bad" fail step/check.sh SUBSTITUTERS=https://c.example.org KEYS="$bad"
+  run "check: rejects key ${bad}" fail step/check.sh SUBSTITUTERS=https://c.example.org KEYS="${bad}"
   expect message "Invalid extra trusted public key"
   finish
 done
@@ -140,7 +140,7 @@ finish
 
 for bad in "ghs abc" "ghs_abc#x" "ghs_a=b"; do
   setup_action
-  run "check: rejects token '$bad'" fail step/check.sh TOKEN="$bad"
+  run "check: rejects token '${bad}'" fail step/check.sh TOKEN="${bad}"
   expect message "Invalid github-token"
   finish
 done
@@ -153,7 +153,7 @@ expect no-message "::add-mask::"
 finish
 
 setup_action
-mkdir "$fs/nix"
+mkdir "${fs}/nix"
 run "check: reports every problem at once" fail step/check.sh \
   SUDO_FAILS=1 SUBSTITUTERS=http://x KEYS=bad TOKEN="a b"
 expect errors 5
@@ -161,7 +161,7 @@ finish
 
 setup_action
 run "check: at most 10 errors, the last one counts the rest" fail step/check.sh \
-  SUBSTITUTERS="$(printf 'http://%s ' {a..l})" KEYS="$key"
+  SUBSTITUTERS="$(printf 'http://%s ' {a..l})" KEYS="${key}"
 expect errors 10
 expect message "Invalid extra substituter 'http://i'"
 expect no-message "Invalid extra substituter 'http://j'"
@@ -172,24 +172,24 @@ finish
 
 setup_action
 run "check: carriage return cannot start a workflow command" fail step/check.sh \
-  SUBSTITUTERS=$'x\r::stop-commands::k' KEYS="$key"
+  SUBSTITUTERS=$'x\r::stop-commands::k' KEYS="${key}"
 expect message "Invalid extra substituter 'x'"
 expect message "Invalid extra substituter '::stop-commands::k'"
-[[ -z $current ]] || ! grep -q $'\r' "$work/stdout" || report "a carriage return was printed"
+[[ -z ${current} ]] || ! grep -q $'\r' "${work}/stdout" || report "a carriage return was printed"
 finish
 
 setup_action
 run "check: other control characters are not printed" fail step/check.sh \
-  SUBSTITUTERS=$'https://a\x1b]8;;x' KEYS="$key"
+  SUBSTITUTERS=$'https://a\x1b]8;;x' KEYS="${key}"
 expect message "Invalid extra substituter 'https://a?]8;;x'"
 finish
 
 for leftover in etc/xdg/nix etc/systemd/system/nix-daemon.service etc/bashrc.backup-before-nix; do
   setup_action
-  mkdir -p "$fs/$(dirname "$leftover")"
-  touch "$fs/$leftover"
-  run "check: finds /$leftover" fail step/check.sh
-  expect message "found: /$leftover"
+  mkdir -p "${fs}/$(dirname "${leftover}")"
+  touch "${fs}/${leftover}"
+  run "check: finds /${leftover}" fail step/check.sh
+  expect message "found: /${leftover}"
   finish
 done
 

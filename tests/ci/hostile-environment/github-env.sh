@@ -14,14 +14,14 @@ recorder() {
   local marker=$1 what=$2
   # shellcheck disable=SC2016 # expanded by the scripts of the action
   printf 'case $0 in */scripts/*.sh | */action-shell-lib/*.sh) builtin printf "%%s %%s\\n" "$0" %s >>"$RUNNER_TEMP/%s" ;; esac' \
-    "$what" "$marker"
+    "${what}" "${marker}"
 }
 
 for name in "${COMMANDS[@]}"; do
   printf 'BASH_FUNC_%s%%%%=() { %s; command %s "$@"; }\n' \
-    "$name" "$(recorder functions-ran "$name")" "$name"
-done >>"$GITHUB_ENV"
+    "${name}" "$(recorder functions-ran "${name}")" "${name}"
+done >>"${GITHUB_ENV}"
 {
   echo "SHELLOPTS=xtrace"
   echo "PS4=\$($(recorder ps4-ran PS4))+ "
-} >>"$GITHUB_ENV"
+} >>"${GITHUB_ENV}"

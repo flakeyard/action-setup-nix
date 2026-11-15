@@ -5,16 +5,16 @@
 # /usr/bin/bash, with SHELL_LIB.
 set -euo pipefail
 # shellcheck source=/dev/null # the library, from SHELL_LIB
-source "$SHELL_LIB/report.sh"
+source "${SHELL_LIB}/report.sh"
 for marker in bash-env-ran functions-ran ps4-ran fake-tools-ran; do
-  if [[ -e $RUNNER_TEMP/$marker ]]; then
-    fail "The action used the job environment ($marker): $(<"$RUNNER_TEMP/$marker")"
+  if [[ -e ${RUNNER_TEMP}/${marker} ]]; then
+    fail "The action used the job environment (${marker}): $(<"${RUNNER_TEMP}/${marker}")"
   fi
 done
 group=$(getent group nixbld) || fail "No group nixbld."
-IFS=: read -r _ _ gid members <<<"$group"
-IFS=, read -r -a users <<<"$members"
-[[ $gid == 30000 && ${#users[@]} == 32 ]] \
-  || fail "The installer took NIX_BUILD_GROUP_ID or NIX_USER_COUNT: GID $gid, ${#users[@]} build users."
+IFS=: read -r _ _ gid members <<<"${group}"
+IFS=, read -r -a users <<<"${members}"
+[[ ${gid} == 30000 && ${#users[@]} == 32 ]] \
+  || fail "The installer took NIX_BUILD_GROUP_ID or NIX_USER_COUNT: GID ${gid}, ${#users[@]} build users."
 grep -qx 'sandbox = true' /etc/nix/nix.conf || fail "NIX_CONFIG reached /etc/nix/nix.conf."
 echo "The job environment did not change the installation."
