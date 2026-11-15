@@ -18,10 +18,12 @@ recorder() {
 }
 
 for name in "${COMMANDS[@]}"; do
+  code=$(recorder functions-ran "${name}")
   printf 'BASH_FUNC_%s%%%%=() { %s; command %s "$@"; }\n' \
-    "${name}" "$(recorder functions-ran "${name}")" "${name}"
+    "${name}" "${code}" "${name}"
 done >>"${GITHUB_ENV}"
+code=$(recorder ps4-ran PS4)
 {
   echo "SHELLOPTS=xtrace"
-  echo "PS4=\$($(recorder ps4-ran PS4))+ "
+  echo "PS4=\$(${code})+ "
 } >>"${GITHUB_ENV}"

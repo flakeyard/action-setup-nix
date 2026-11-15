@@ -4,7 +4,10 @@
 # A key of a test cache, and names of two store paths.
 signing_key=${shared}/signing.pem
 openssl genpkey -algorithm ed25519 -out "${signing_key}" 2>/dev/null
-test_key=test-1:$(openssl pkey -in "${signing_key}" -pubout -outform DER | tail -c 32 | base64)
+# The raw key is the last 32 bytes of the DER form of the public key.
+openssl pkey -in "${signing_key}" -pubout -outform DER -out "${shared}/signing.der"
+tail -c 32 "${shared}/signing.der" >"${shared}/signing.raw"
+test_key=test-1:$(base64 <"${shared}/signing.raw")
 dep=$(printf 'a%.0s' {1..32})-dep-1.0
 nix=$(printf 'b%.0s' {1..32})-nix-9.0.0
 
@@ -30,10 +33,12 @@ release_setup() {
 
 # reginfo_entry NAME [REFERENCE...]: the .reginfo lines of a store path.
 reginfo_entry() {
-  local name=$1
+  local name=$1 nar_hash hash size
   shift
   printf '/nix/store/%s\n' "${name}"
-  "${root}/scripts/update/check-tarball.py" --nar-hash "${release}/store/${name}" | tr ' ' '\n'
+  nar_hash=$("${root}/scripts/update/check-tarball.py" --nar-hash "${release}/store/${name}")
+  read -r hash size <<<"${nar_hash}"
+  printf '%s\n%s\n' "${hash}" "${size}"
   printf '\n%s\n' "$#"
   (($#)) && printf '/nix/store/%s\n' "$@"
   return 0
@@ -42,21 +47,26 @@ reginfo_entry() {
 # narinfo NAME [REFERENCE...]: a signed narinfo of a store path in the cache,
 # with the references in the given order. Like Nix, it signs them sorted.
 narinfo() {
-  local name=$1 hash size fingerprint refs
+  local name=$1 nar_hash hash size fingerprint refs sig
   shift
-  read -r hash size < <("${root}/scripts/update/check-tarball.py" --nar-hash "${release}/store/${name}")
+  nar_hash=$("${root}/scripts/update/check-tarball.py" --nar-hash "${release}/store/${name}")
+  read -r hash size <<<"${nar_hash}"
   refs=""
-  (($#)) && refs=$(printf '/nix/store/%s\n' "$@" | sort | paste -sd,)
+  if (($#)); then
+    refs=$(printf '/nix/store/%s\n' "$@" | sort)
+    refs=${refs//$'\n'/,}
+  fi
   fingerprint="1;/nix/store/${name};${hash};${size};${refs}"
   printf '%s' "${fingerprint}" >"${work}/fingerprint"
   openssl pkeyutl -sign -inkey "${sign_with:-${signing_key}}" -rawin \
     -in "${work}/fingerprint" -out "${work}/sig"
+  sig=$(base64 -w0 <"${work}/sig")
   {
     echo "StorePath: /nix/store/${name}"
     echo "NarHash: ${hash}"
     echo "NarSize: ${size}"
     echo "References: $*"
-    echo "Sig: ${test_key%%:*}:$(base64 -w0 <"${work}/sig")"
+    echo "Sig: ${test_key%%:*}:${sig}"
   } >"${work}/fixtures/${name%%-*}.narinfo"
 }
 
@@ -151,21 +161,24 @@ expect message "3 store paths match"
 finish
 
 release_setup
-sed -i "s|^References: .*|References: \nReferences: ${dep}|" "$(narinfo_file "${nix}")"
+narinfo=$(narinfo_file "${nix}")
+sed -i "s|^References: .*|References: \nReferences: ${dep}|" "${narinfo}"
 pack
 run "check-tarball: References twice" fail update/check-tarball.py -- "${work}/release.tar.xz"
 expect message "error: /nix/store/${nix} in the tarball differs from https://example.test/cache"
 finish
 
 release_setup
-sed -i "s|^StorePath: .*|&\n&|" "$(narinfo_file "${nix}")"
+narinfo=$(narinfo_file "${nix}")
+sed -i "s|^StorePath: .*|&\n&|" "${narinfo}"
 pack
 run "check-tarball: StorePath twice" fail update/check-tarball.py -- "${work}/release.tar.xz"
 expect message "error: /nix/store/${nix} in the tarball differs from https://example.test/cache"
 finish
 
 release_setup
-sed -i "s|^NarSize: |&0|" "$(narinfo_file "${nix}")"
+narinfo=$(narinfo_file "${nix}")
+sed -i "s|^NarSize: |&0|" "${narinfo}"
 pack
 run "check-tarball: NarSize with a leading zero" fail update/check-tarball.py -- "${work}/release.tar.xz"
 expect message "error: /nix/store/${nix} in the tarball differs from https://example.test/cache"

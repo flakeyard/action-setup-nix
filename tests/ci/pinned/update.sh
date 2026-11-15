@@ -30,7 +30,8 @@ sed -i -e "s/^NIX_VERSION=.*/NIX_VERSION=${previous}/" \
 # scripts/update/nix.sh checks the previous tarballs against these hashes
 # before it compares their installer scripts.
 for system in "${SYSTEMS[@]}"; do
-  hash=$("${HTTPS_CURL[@]}" "$(tarball_url "${previous}" "${system}").sha256")
+  url=$(tarball_url "${previous}" "${system}")
+  hash=$("${HTTPS_CURL[@]}" "${url}.sha256")
   [[ ${hash} =~ ${SHA256_RE} ]] \
     || fail "Invalid published SHA-256 of Nix ${previous} for ${system}: ${hash}"
   var=$(pin_var "${system}")

@@ -12,8 +12,8 @@ source "${here}/env.sh"
 source "${here}/text.sh"
 
 substituters=() keys=()
-mapfile -t substituters < <(words "${SUBSTITUTERS-}")
-mapfile -t keys < <(words "${KEYS-}")
+words substituters "${SUBSTITUTERS-}"
+words keys "${KEYS-}"
 # Shared with update/check-tarball.py, which checks the releases with it.
 cache_key=$(<"${here}/cache-public-key")
 
