@@ -5,5 +5,5 @@ set -euo pipefail
 cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../../.."
 # shellcheck source-path=SCRIPTDIR source=../../../versions.sh
 source versions.sh
-scripts/update/nix.sh "$NIX_VERSION"
+scripts/update/nix.sh "${NIX_VERSION}"
 git diff --exit-code -- versions.sh

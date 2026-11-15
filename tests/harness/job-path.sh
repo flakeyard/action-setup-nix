@@ -8,13 +8,13 @@ JOB_TOOLS=(bash env dirname id mktemp cat cp mkdir rm sed grep curl sha256sum ta
 # fake_job_tools: $work/job-bin with a fake of each of JOB_TOOLS, which records
 # its call in $work/job-tools-ran and on stderr, and fails.
 fake_job_tools() {
-  local bin=$work/job-bin name
-  mkdir -p "$bin"
+  local bin=${work}/job-bin name
+  mkdir -p "${bin}"
   for name in "${JOB_TOOLS[@]}"; do
     # shellcheck disable=SC2016 # expanded by the fake
     printf '#!/bin/sh\necho "%s $*" >>"%s"\necho "fake %s of the job PATH" >&2\nexit 1\n' \
-      "$name" "$work/job-tools-ran" "$name" >"$bin/$name"
-    chmod +x "$bin/$name"
+      "${name}" "${work}/job-tools-ran" "${name}" >"${bin}/${name}"
+    chmod +x "${bin}/${name}"
   done
 }
 
@@ -24,8 +24,8 @@ fake_job_tools() {
 run_with_job_path() {
   local name=$1 step=$2
   fake_job_tools
-  run_hostile "$name" ok "$action" "$step" "${@:3}" \
-    PATH="$work/job-bin:$root/tests/harness/stub:$sysbin"
-  [[ -z $current || ! -e $work/job-tools-ran ]] \
-    || report "ran tools of the job PATH: $(paste -sd';' "$work/job-tools-ran")"
+  run_hostile "${name}" ok "${action}" "${step}" "${@:3}" \
+    PATH="${work}/job-bin:${root}/tests/harness/stub:${sysbin}"
+  [[ -z ${current} || ! -e ${work}/job-tools-ran ]] \
+    || report "ran tools of the job PATH: $(paste -sd';' "${work}/job-tools-ran")"
 }

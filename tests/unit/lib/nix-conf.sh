@@ -4,7 +4,7 @@
 # readme_conf: prints the nix.conf block of the README without its indentation.
 # shellcheck disable=SC2016 # sed code, not expanded here
 readme_conf() {
-  sed -n -e '/^  ```ini$/,/^  ```$/{/```/d;s/^  //;p}' "$root/README.md"
+  sed -n -e '/^  ```ini$/,/^  ```$/{/```/d;s/^  //;p}' "${root}/README.md"
 }
 
 setup_action
@@ -19,13 +19,13 @@ finish
 
 setup_action
 run "nix-conf: the README shows the settings" ok lib/nix-conf.sh
-[[ -z $current || $(grep -v '^#' "$work/stdout") == "$(readme_conf)" ]] \
-  || report "the README shows other settings: $(diff <(grep -v '^#' "$work/stdout") <(readme_conf))"
+[[ -z ${current} || $(grep -v '^#' "${work}/stdout") == "$(readme_conf)" ]] \
+  || report "the README shows other settings: $(diff <(grep -v '^#' "${work}/stdout") <(readme_conf))"
 finish
 
 setup_action
 run "nix-conf: extra caches on one line each" ok lib/nix-conf.sh \
-  SUBSTITUTERS=$'https://a.example.org\n https://b.example.org' KEYS="$key"
+  SUBSTITUTERS=$'https://a.example.org\n https://b.example.org' KEYS="${key}"
 expect message "extra-substituters = https://a.example.org https://b.example.org"
-expect message "extra-trusted-public-keys = $key"
+expect message "extra-trusted-public-keys = ${key}"
 finish

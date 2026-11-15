@@ -12,10 +12,10 @@ nix_system() {
 
 # user_conf: prints the path of the runner user's nix.conf.
 user_conf() {
-  echo "${XDG_CONFIG_HOME:-$HOME/.config}/nix/nix.conf"
+  echo "${XDG_CONFIG_HOME:-${HOME}/.config}/nix/nix.conf"
 }
 
 # nix_bin: prints the path of the installed nix.
 nix_bin() {
-  echo "$ROOT/nix/var/nix/profiles/default/bin/nix"
+  echo "${ROOT}/nix/var/nix/profiles/default/bin/nix"
 }

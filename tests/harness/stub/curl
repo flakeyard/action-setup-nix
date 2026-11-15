@@ -33,7 +33,7 @@ while (($#)); do
   esac
 done
 
-if $location && [[ $proto_redir != =https ]]; then
+if ${location} && [[ ${proto_redir} != =https ]]; then
   echo "curl stub: --location without --proto-redir =https" >&2
   exit 2
 fi
@@ -41,22 +41,22 @@ fi
 # answer URL OUTPUT: serves one URL; OUTPUT is empty for stdout.
 answer() {
   local url=$1 output=$2 file code=200
-  echo "curl $url" >>"$CALLS"
-  file=$FIXTURES/${url##*/}
-  if [[ ! -f $file ]]; then
+  echo "curl ${url}" >>"${CALLS}"
+  file=${FIXTURES}/${url##*/}
+  if [[ ! -f ${file} ]]; then
     code=404
-    if $fail || [[ -z $write_out ]]; then
+    if ${fail} || [[ -z ${write_out} ]]; then
       echo "curl: (22) The requested URL returned error: 404" >&2
       exit 22
     fi
     : >"${output:-/dev/null}"
-  elif [[ -n $output ]]; then
-    cp -- "$file" "$output"
+  elif [[ -n ${output} ]]; then
+    cp -- "${file}" "${output}"
   else
-    cat -- "$file"
+    cat -- "${file}"
   fi
-  if [[ -n $write_out ]]; then
-    local text=${write_out//'%{http_code}'/$code}
+  if [[ -n ${write_out} ]]; then
+    local text=${write_out//'%{http_code}'/${code}}
     printf '%s' "${text//'\n'/$'\n'}"
   fi
 }

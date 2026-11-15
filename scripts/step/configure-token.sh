@@ -7,13 +7,13 @@ set -euo pipefail
 # Builtins only until lib/env.sh replaces PATH, which is the job's.
 lib=${BASH_SOURCE[0]%/*}/../lib
 # shellcheck source-path=SCRIPTDIR source=../lib/env.sh
-source "$lib/env.sh"
+source "${lib}/env.sh"
 # shellcheck source-path=SCRIPTDIR source=../lib/runner.sh
-source "$lib/runner.sh"
+source "${lib}/runner.sh"
 
 conf=$(user_conf)
-mkdir -p -- "$(dirname -- "$conf")"
+mkdir -p -- "$(dirname -- "${conf}")"
 umask 077
 # noclobber: check.sh found no such file, so one now is not ours.
 set -o noclobber
-printf 'access-tokens = github.com=%s\n' "$TOKEN" >"$conf"
+printf 'access-tokens = github.com=%s\n' "${TOKEN}" >"${conf}"

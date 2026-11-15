@@ -7,15 +7,15 @@ set -euo pipefail
 # Builtins only until lib/env.sh replaces PATH, which is the job's.
 lib=${BASH_SOURCE[0]%/*}/../lib
 # shellcheck source-path=SCRIPTDIR source=../lib/env.sh
-source "$lib/env.sh"
+source "${lib}/env.sh"
 # shellcheck source-path=SCRIPTDIR source=../lib/runner.sh
-source "$lib/runner.sh"
+source "${lib}/runner.sh"
 # shellcheck source-path=SCRIPTDIR source=../lib/text.sh
-source "$lib/text.sh"
+source "${lib}/text.sh"
 # shellcheck source=/dev/null # the library, from SHELL_LIB
-source "$SHELL_LIB/report.sh"
+source "${SHELL_LIB}/report.sh"
 # shellcheck source=/dev/null
-source "$SHELL_LIB/github/forms.sh"
+source "${SHELL_LIB}/github/forms.sh"
 
 # Values go into nix.conf, which the daemon reads: no whitespace inside a
 # value, no query (?trusted=1 disables signature checks), no fragment (#
@@ -30,7 +30,7 @@ PUBLIC_KEY_RE='^[A-Za-z0-9._-]+:[A-Za-z0-9+/]{43}=$'
 # runs_on_host_with_systemd: the job runs on the runner, not in a container,
 # and systemd runs there.
 runs_on_host_with_systemd() {
-  [[ ! -e $ROOT/.dockerenv && -d $ROOT/run/systemd/system ]]
+  [[ ! -e ${ROOT}/.dockerenv && -d ${ROOT}/run/systemd/system ]]
 }
 
 check_runner() {
@@ -45,18 +45,18 @@ check_runner() {
 is_tested_ubuntu() {
   local os=$1 version
   for version in "${TESTED_UBUNTU[@]}"; do
-    [[ $os == "ubuntu/$version" ]] && return 0
+    [[ ${os} == "ubuntu/${version}" ]] && return 0
   done
   return 1
 }
 
 warn_if_untested_os() {
   local os
-  [[ -r $ROOT/etc/os-release ]] || return 0
+  [[ -r ${ROOT}/etc/os-release ]] || return 0
   # shellcheck disable=SC1091 # the runner's file
-  os=$(. "$ROOT/etc/os-release" && echo "${ID-}/${VERSION_ID-}")
-  is_tested_ubuntu "$os" \
-    || warning "This action is not tested on $os; tested: Ubuntu ${TESTED_UBUNTU[*]}."
+  os=$(. "${ROOT}/etc/os-release" && echo "${ID-}/${VERSION_ID-}")
+  is_tested_ubuntu "${os}" \
+    || warning "This action is not tested on ${os}; tested: Ubuntu ${TESTED_UBUNTU[*]}."
 }
 
 # Nix installed before.
@@ -65,13 +65,13 @@ warn_if_untested_os() {
 # runner, one per line.
 previous_nix_traces() {
   local path
-  for path in "$ROOT"/{nix,etc/nix,etc/xdg/nix} \
-    "$ROOT"/etc/systemd/system/nix-daemon.* "$ROOT"/etc/*.backup-before-nix; do
-    if [[ -e $path ]]; then
-      printf '%s\n' "${path#"$ROOT"}"
+  for path in "${ROOT}"/{nix,etc/nix,etc/xdg/nix} \
+    "${ROOT}"/etc/systemd/system/nix-daemon.* "${ROOT}"/etc/*.backup-before-nix; do
+    if [[ -e ${path} ]]; then
+      printf '%s\n' "${path#"${ROOT}"}"
     fi
   done
-  if [[ -r $ROOT/etc/group ]] && grep -q '^nixbld:' "$ROOT/etc/group"; then
+  if [[ -r ${ROOT}/etc/group ]] && grep -q '^nixbld:' "${ROOT}/etc/group"; then
     echo "group nixbld"
   fi
   if job_tool nix &>/dev/null; then
@@ -96,8 +96,8 @@ check_clean_runner() {
 check_substituters() {
   local url
   for url in "$@"; do
-    [[ $url =~ $SUBSTITUTER_RE ]] \
-      || problem "Invalid extra substituter '$(shown "$url")': expected an https URL without user information, query or fragment."
+    [[ ${url} =~ ${SUBSTITUTER_RE} ]] \
+      || problem "Invalid extra substituter '$(shown "${url}")': expected an https URL without user information, query or fragment."
   done
 }
 
@@ -105,8 +105,8 @@ check_substituters() {
 check_keys() {
   local key
   for key in "$@"; do
-    [[ $key =~ $PUBLIC_KEY_RE ]] \
-      || problem "Invalid extra trusted public key '$(shown "$key")': expected <name>:<base64 Ed25519 key>."
+    [[ ${key} =~ ${PUBLIC_KEY_RE} ]] \
+      || problem "Invalid extra trusted public key '$(shown "${key}")': expected <name>:<base64 Ed25519 key>."
   done
 }
 
@@ -123,8 +123,8 @@ check_cache_pairing() {
 
 check_token() {
   [[ -n ${TOKEN-} ]] || return 0
-  if [[ $TOKEN =~ $TOKEN_FORM ]]; then
-    echo "::add-mask::$TOKEN"
+  if [[ ${TOKEN} =~ ${TOKEN_FORM} ]]; then
+    echo "::add-mask::${TOKEN}"
   else
     # The value is not printed: it may be a secret.
     problem "Invalid github-token: expected only letters, digits, underscores, dots and hyphens."

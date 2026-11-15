@@ -17,13 +17,13 @@ HTTPS_CURL=(curl "${HTTPS_CURL_ARGS[@]}" --proto-redir '=https' --location --fai
 # .tar.xz, which is also the name of its top-level directory.
 tarball_name() {
   local version=$1 system=$2
-  echo "nix-$version-$system"
+  echo "nix-${version}-${system}"
 }
 
 # tarball_url VERSION SYSTEM: prints the URL of a release tarball.
 tarball_url() {
   local version=$1 system=$2
-  echo "$NIX_BASE_URL/nix-$version/$(tarball_name "$version" "$system").tar.xz"
+  echo "${NIX_BASE_URL}/nix-${version}/$(tarball_name "${version}" "${system}").tar.xz"
 }
 
 # pin_var SYSTEM: prints the name of the variable that pins the hash of the
@@ -36,13 +36,13 @@ pin_var() {
 # pinned_sha256 SYSTEM: prints the pinned hash of the tarball for SYSTEM.
 pinned_sha256() {
   local system=$1 var
-  var=$(pin_var "$system")
+  var=$(pin_var "${system}")
   echo "${!var}"
 }
 
 # sha256_of FILE: prints the SHA-256 of FILE.
 sha256_of() {
   local file=$1 sum
-  sum=$(sha256sum -- "$file")
+  sum=$(sha256sum -- "${file}")
   echo "${sum%% *}"
 }

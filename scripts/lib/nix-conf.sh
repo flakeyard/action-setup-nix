@@ -7,22 +7,22 @@ set -euo pipefail
 # Builtins only until env.sh replaces PATH.
 here=${BASH_SOURCE[0]%/*}
 # shellcheck source-path=SCRIPTDIR source=env.sh
-source "$here/env.sh"
+source "${here}/env.sh"
 # shellcheck source-path=SCRIPTDIR source=text.sh
-source "$here/text.sh"
+source "${here}/text.sh"
 
 substituters=() keys=()
 mapfile -t substituters < <(words "${SUBSTITUTERS-}")
 mapfile -t keys < <(words "${KEYS-}")
 # Shared with update/check-tarball.py, which checks the releases with it.
-cache_key=$(<"$here/cache-public-key")
+cache_key=$(<"${here}/cache-public-key")
 
 cat <<EOF
 # Written by action-setup-nix.
 sandbox = true
 sandbox-fallback = false
 substituters = https://cache.nixos.org/
-trusted-public-keys = $cache_key
+trusted-public-keys = ${cache_key}
 require-sigs = true
 accept-flake-config = false
 extra-experimental-features = nix-command flakes

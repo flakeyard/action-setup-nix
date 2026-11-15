@@ -11,13 +11,13 @@ hostile_vars=(
 )
 
 setup_action
-run_hostile "action: the environment does not reach step/check.sh" fail "$action" check \
+run_hostile "action: the environment does not reach step/check.sh" fail "${action}" check \
   "${hostile_vars[@]}" SUDO_FAILS=1
 expect message "::error::The installation needs passwordless sudo."
 expect no-message "INJECTED"
 finish
 
-code_root=$root check_action_steps action.yml
-yaml_check "$(code_root=$root load_yaml action.yml)" "action: the library and the four steps of the action" \
+code_root=${root} check_action_steps action.yml
+yaml_check "$(code_root=${root} load_yaml action.yml)" "action: the library and the four steps of the action" \
   '.runs.steps | length == 5'
-code_root=$root check_library_pins
+code_root=${root} check_library_pins

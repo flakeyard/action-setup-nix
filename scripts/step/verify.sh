@@ -7,39 +7,39 @@ set -euo pipefail
 # Builtins only until lib/env.sh replaces PATH, which is the job's.
 lib=${BASH_SOURCE[0]%/*}/../lib
 # shellcheck source-path=SCRIPTDIR source=../lib/env.sh
-source "$lib/env.sh"
+source "${lib}/env.sh"
 # shellcheck source-path=SCRIPTDIR source=../lib/runner.sh
-source "$lib/runner.sh"
+source "${lib}/runner.sh"
 # shellcheck source=/dev/null # the library, from SHELL_LIB
-source "$SHELL_LIB/report.sh"
+source "${SHELL_LIB}/report.sh"
 
 # Only the runner user's own settings, not those of the job environment, such
 # as NIX_CONFIG.
 nix() {
-  env -i PATH="$SYSTEM_PATH" HOME="$HOME" USER="$(id -un)" "$(nix_bin)" "$@"
+  env -i PATH="${SYSTEM_PATH}" HOME="${HOME}" USER="$(id -un)" "$(nix_bin)" "$@"
 }
 
-conf=$ROOT/etc/nix/nix.conf
+conf=${ROOT}/etc/nix/nix.conf
 [[ -x $(nix_bin) ]] || fail "$(nix_bin) was not installed."
-[[ -r $conf ]] || fail "$conf was not installed."
+[[ -r ${conf} ]] || fail "${conf} was not installed."
 
 version=$(nix --version) || fail "nix --version failed."
-[[ $version == "nix (Nix) $NIX_VERSION" ]] \
-  || fail "Installed '$version', expected Nix $NIX_VERSION."
+[[ ${version} == "nix (Nix) ${NIX_VERSION}" ]] \
+  || fail "Installed '${version}', expected Nix ${NIX_VERSION}."
 
 nix store info >/dev/null || fail "The Nix daemon does not answer."
 
-expected=$("$lib/nix-conf.sh")
-actual=$(<"$conf")
-[[ $actual == "$expected"$'\n'* ]] \
-  || fail "$conf does not start with the settings of this action."
+expected=$("${lib}/nix-conf.sh")
+actual=$(<"${conf}")
+[[ ${actual} == "${expected}"$'\n'* ]] \
+  || fail "${conf} does not start with the settings of this action."
 while IFS= read -r line; do
-  [[ -z $line || $line == "build-users-group = nixbld" ]] \
-    || fail "Unexpected line in $conf: $line"
-done <<<"${actual#"$expected"}"
+  [[ -z ${line} || ${line} == "build-users-group = nixbld" ]] \
+    || fail "Unexpected line in ${conf}: ${line}"
+done <<<"${actual#"${expected}"}"
 
 [[ $(nix config show sandbox) == true && $(nix config show sandbox-fallback) == false ]] \
   || fail "The sandbox is not enabled."
 
-echo "Installed Nix $NIX_VERSION."
-echo "nix-version=$NIX_VERSION" >>"$GITHUB_OUTPUT"
+echo "Installed Nix ${NIX_VERSION}."
+echo "nix-version=${NIX_VERSION}" >>"${GITHUB_OUTPUT}"
