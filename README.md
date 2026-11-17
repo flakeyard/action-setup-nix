@@ -170,18 +170,18 @@ it replaced, `PREVIOUS_NIX_VERSION` in `versions.sh`, which must reproduce
 `versions.sh` and this README.
 
 Layout: `scripts/step/` holds one script per step of `action.yml`, which runs
-them through the `run-step.sh` of [action-shell-lib][action-shell-lib], whose
-first step rejects unsupported runners; `scripts/lib/` holds what the steps
-share, also with the tools in `scripts/update/` that update the pinned release.
+them through the `run-step.sh` of [lib-actions][lib-actions], whose first step
+rejects unsupported runners; `scripts/lib/` holds what the steps share, also
+with the tools in `scripts/update/` that update the pinned release.
 
 Tests: `tests/run.sh` runs the unit tests of the scripts in `tests/unit/`, which
-mirrors `scripts/`, with the harness of `internal/testing/` of action-shell-lib
-and the helpers in `tests/harness/`; `tests/ci/<job>/` holds the checks that a
-job of the CI runs on real runners after the action. The tests take
-action-shell-lib from `SHELL_LIB`, which the CI sets, or else fetch it with
-`git` at the commit that `action.yml` pins, into
-`~/.cache/flakeyard/action-shell-lib/`. They read `action.yml` with mikefarah
-`yq` v4, which GitHub-hosted runners and the development shell have.
+mirrors `scripts/`, with the harness of `internal/testing/` of lib-actions and
+the helpers in `tests/harness/`; `tests/ci/<job>/` holds the checks that a job
+of the CI runs on real runners after the action. The tests take lib-actions from
+`SHELL_LIB`, which the CI sets, or else fetch it with `git` at the commit that
+`action.yml` pins, into `~/.cache/flakeyard/lib-actions/`. They read
+`action.yml` with mikefarah `yq` v4, which GitHub-hosted runners and the
+development shell have.
 
 Checks: [`flake.nix`](flake.nix) only imports atoms ([FY-0038][fy-0038]):
 [atom-workflows][atom-workflows] lints the workflows and `action.yml` with
@@ -212,10 +212,10 @@ are released:
 
 [MIT](LICENSE).
 
-[action-shell-lib]: https://github.com/flakeyard/action-shell-lib
 [atom-nix]: https://github.com/flakeyard/atom-nix
 [atom-shell]: https://github.com/flakeyard/atom-shell
 [atom-workflows]: https://github.com/flakeyard/atom-workflows
+[lib-actions]: https://github.com/flakeyard/lib-actions
 [nix]: https://github.com/NixOS/nix
 [scorecard-badge]:
   https://api.scorecard.dev/projects/github.com/flakeyard/action-setup-nix/badge
