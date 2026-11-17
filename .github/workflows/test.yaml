@@ -256,7 +256,7 @@ jobs:
       ]
     # Dispatched runs post their final status on every outcome.
     if: ${{ !cancelled() || github.event_name == 'workflow_dispatch' }}
-    uses: flakeyard/workflow-check/.github/workflows/check.yaml@aa514199d5eb5231dfc42e70a99288fd79832311 # v0.4.0
+    uses: flakeyard/workflow-check/.github/workflows/check.yaml@5620ea8579577e9d6b5545aeeea66a9cc5ec6db1 # v0.5.1
     permissions:
       actions: read # own job name and the jobs of the run
       contents: read # repository files through the contents API, checkout
