@@ -148,7 +148,7 @@ worktree, and run `direnv block` before you check out a branch you do not trust,
 since entering the directory runs that branch's shell hook. Commit inside the
 container, whose Nix store has the tools of the hooks. The tests and checks
 below run in it as in CI; tools that the shell does not have come from nixpkgs,
-such as `nix run nixpkgs#typos`. Nix on the host works as well: `direnv allow`
+such as `nix run nixpkgs#reuse`. Nix on the host works as well: `direnv allow`
 or `nix develop` gives the same shell.
 
 To update Nix, run `scripts/update/nix.sh VERSION`; it needs `curl`, `openssl`,
@@ -188,33 +188,41 @@ Checks: [`flake.nix`](flake.nix) only imports atoms ([FY-0038][fy-0038]):
 actionlint and zizmor (`checks.workflows`). [atom-nix][atom-nix] lints the Nix
 files with statix, deadnix and its hook of relative paths (`checks.nix`),
 [atom-shell][atom-shell] lints the shell scripts with shellcheck
-(`checks.shell`), and treefmt checks their formatting with nixfmt and shfmt
-(`checks.treefmt`). Run them with `nix flake check`.
+(`checks.shell`), [atom-markdown][atom-markdown] lints the Markdown files with
+markdownlint and checks their links inside the repository with lychee
+(`checks.markdown`), [atom-text][atom-text] checks the spelling of every file
+with typos and its line endings, final newline and trailing whitespace with
+editorconfig-checker (`checks.text`), and treefmt checks the formatting with
+nixfmt, shfmt and prettier (`checks.treefmt`). Run them with `nix flake check`.
 
 CI: [`test.yaml`](.github/workflows/test.yaml) runs the unit tests and the
 action on the supported runners and ends with [workflow-check][workflow-check],
 which checks `flake.lock`, builds the checks of the flake, checks the pull
 request title and `renovate.json` and reports `check / required` over every job.
-[`scorecard.yaml`](.github/workflows/scorecard.yaml) runs OpenSSF Scorecard with
-[workflow-scorecard][workflow-scorecard]. Releases go through
-[`release.yaml`](.github/workflows/release.yaml), whose release pull requests
-are checked by a dispatched run of `test.yaml`.
+Its weekly run also checks every link of the Markdown files and runs the audits
+of zizmor that need the network, with the apps `markdown-links` and
+`workflows-online`. [`scorecard.yaml`](.github/workflows/scorecard.yaml) runs
+OpenSSF Scorecard with [workflow-scorecard][workflow-scorecard]. Releases go
+through [`release.yaml`](.github/workflows/release.yaml), whose release pull
+requests are checked by a dispatched run of `test.yaml`.
 
 ## Bootstrap
 
 This repository is bootstrapped under [FY-0022][fy-0022]. Until their providers
 are released:
 
-- Prettier and the other checks of the atoms that are not released yet run
-  locally before every pull request (provider: the atoms).
+- `reuse lint` runs locally before every pull request (provider: an atom that is
+  not released yet).
 
 ## License
 
 [MIT](LICENSE).
 
 [action-shell-lib]: https://github.com/flakeyard/action-shell-lib
+[atom-markdown]: https://github.com/flakeyard/atom-markdown
 [atom-nix]: https://github.com/flakeyard/atom-nix
 [atom-shell]: https://github.com/flakeyard/atom-shell
+[atom-text]: https://github.com/flakeyard/atom-text
 [atom-workflows]: https://github.com/flakeyard/atom-workflows
 [nix]: https://github.com/NixOS/nix
 [scorecard-badge]:
