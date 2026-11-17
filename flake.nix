@@ -15,6 +15,11 @@
       url = "git+https://github.com/numtide/treefmt-nix?ref=main&rev=0d6d739a833ba9a9c93034862e4a7b061a062a1c&shallow=1";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    atom-data-formats = {
+      url = "git+https://github.com/flakeyard/atom-data-formats?ref=v0&rev=0c643933ae631061f9fb6f1f26cf556db689f011&shallow=1";
+      inputs.treefmt-nix.follows = "treefmt-nix";
+      inputs.git-hooks.follows = "git-hooks";
+    };
     atom-markdown = {
       url = "git+https://github.com/flakeyard/atom-markdown?ref=v0&rev=5fb65d9146d155f774961e5d1cf8d2154e79d375&shallow=1";
       inputs.treefmt-nix.follows = "treefmt-nix";
@@ -50,6 +55,7 @@
       ];
       # The flake only imports atoms (FY-0038).
       imports = [
+        inputs.atom-data-formats.flakeModules.default
         inputs.atom-markdown.flakeModules.default
         inputs.atom-nix.flakeModules.default
         inputs.atom-shell.flakeModules.default
