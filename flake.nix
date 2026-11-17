@@ -2,7 +2,7 @@
   description = "action-setup-nix: the checks of this repository, which come only from atoms.";
 
   inputs = {
-    nixpkgs.url = "git+https://github.com/NixOS/nixpkgs?ref=nixos-26.05&rev=ac588ef1c914865dad517b337ea0eb9694a4021c&shallow=1";
+    nixpkgs.url = "git+https://github.com/NixOS/nixpkgs?ref=nixos-26.05&rev=b349185bb79c7cf7ad8ea8c097931730bf473c71&shallow=1";
     flake-parts = {
       url = "git+https://github.com/hercules-ci/flake-parts?ref=main&rev=ea2630b7470978622c7689a1ff75d2b389175399&shallow=1";
       inputs.nixpkgs-lib.follows = "nixpkgs";
@@ -21,7 +21,7 @@
       inputs.git-hooks.follows = "git-hooks";
     };
     atom-shell = {
-      url = "git+https://github.com/flakeyard/atom-shell?ref=v0&rev=c6191ba89fd4b4be340cbddfc3fdbeb7f82d3cc5&shallow=1";
+      url = "git+https://github.com/flakeyard/atom-shell?ref=v0&rev=566536a1e4bc2d1bad24688f9828d5ae7d9ec3a9&shallow=1";
       inputs.treefmt-nix.follows = "treefmt-nix";
       inputs.git-hooks.follows = "git-hooks";
     };
@@ -29,7 +29,7 @@
       url = "git+https://github.com/flakeyard/atom-workflows?ref=v0&rev=82957679afb098f2c36fbcc1ccdf5d52f3286ba4&shallow=1";
       inputs.git-hooks.follows = "git-hooks";
     };
-    atom-workspace.url = "git+https://github.com/flakeyard/atom-workspace?ref=v0&rev=53d4d101ec71025dbb19da3d423455e72e10198a&shallow=1";
+    atom-workspace.url = "git+https://github.com/flakeyard/atom-workspace?ref=v0&rev=c84994b6c03a1edbd095cf98c7b9d90b0a324467&shallow=1";
   };
 
   outputs =
