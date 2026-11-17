@@ -13,7 +13,7 @@ COMMANDS=(sha256sum tar cat mktemp id dirname printf echo)
 recorder() {
   local marker=$1 what=$2
   # shellcheck disable=SC2016 # expanded by the scripts of the action
-  printf 'case $0 in */scripts/*.sh | */action-shell-lib/*.sh) builtin printf "%%s %%s\\n" "$0" %s >>"$RUNNER_TEMP/%s" ;; esac' \
+  printf 'case $0 in */scripts/*.sh | */lib-actions/*.sh) builtin printf "%%s %%s\\n" "$0" %s >>"$RUNNER_TEMP/%s" ;; esac' \
     "${what}" "${marker}"
 }
 
