@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.9](https://github.com/flakeyard/action-setup-nix/compare/v0.1.8...v0.1.9) (2026-11-17)
+
+
+### Bug Fixes
+
+* take the shell library from lib-actions ([#119](https://github.com/flakeyard/action-setup-nix/issues/119)) ([4c59e4d](https://github.com/flakeyard/action-setup-nix/commit/4c59e4d53c0f4ea391fd5cadfd7b114e3d2afebf))
+
 ## [0.1.8](https://github.com/flakeyard/action-setup-nix/compare/v0.1.7...v0.1.8) (2026-11-15)
 
 
