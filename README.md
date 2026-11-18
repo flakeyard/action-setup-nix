@@ -192,8 +192,11 @@ files with statix, deadnix and its hook of relative paths (`checks.nix`),
 markdownlint and checks their links inside the repository with lychee
 (`checks.markdown`), [atom-text][atom-text] checks the spelling of every file
 with typos and its line endings, final newline and trailing whitespace with
-editorconfig-checker (`checks.text`), and treefmt checks the formatting with
-nixfmt, shfmt and prettier (`checks.treefmt`). Run them with `nix flake check`.
+editorconfig-checker (`checks.text`), [atom-data-formats][atom-data-formats]
+lints the YAML, JSON and TOML files with yamllint, biome and taplo and the
+metadata of the action and of Renovate with check-jsonschema
+(`checks.data-formats`), and treefmt checks the formatting with nixfmt, shfmt,
+prettier and taplo (`checks.treefmt`). Run them with `nix flake check`.
 
 CI: [`test.yaml`](.github/workflows/test.yaml) runs the unit tests and the
 action on the supported runners and ends with [workflow-check][workflow-check],
@@ -218,6 +221,7 @@ are released:
 
 [MIT](LICENSE).
 
+[atom-data-formats]: https://github.com/flakeyard/atom-data-formats
 [atom-markdown]: https://github.com/flakeyard/atom-markdown
 [atom-nix]: https://github.com/flakeyard/atom-nix
 [atom-shell]: https://github.com/flakeyard/atom-shell
