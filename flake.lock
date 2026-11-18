@@ -38,17 +38,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1794908179,
-        "narHash": "sha256-jTBCBLBw50hqJzHx6IsuRRcZ46PaBY8OqyG1cGoUhF8=",
+        "lastModified": 1794917342,
+        "narHash": "sha256-20TI6khpWfALLz0XUpuJIy1jdl9xJ8BvKmWyl8F0iW0=",
         "ref": "v0",
-        "rev": "5fb65d9146d155f774961e5d1cf8d2154e79d375",
+        "rev": "0d3bca6f2fee47de01ecbe2ce1e49c0219870988",
         "shallow": true,
         "type": "git",
         "url": "https://github.com/flakeyard/atom-markdown"
       },
       "original": {
         "ref": "v0",
-        "rev": "5fb65d9146d155f774961e5d1cf8d2154e79d375",
+        "rev": "0d3bca6f2fee47de01ecbe2ce1e49c0219870988",
         "shallow": true,
         "type": "git",
         "url": "https://github.com/flakeyard/atom-markdown"
@@ -254,17 +254,17 @@
     },
     "lib-atom_2": {
       "locked": {
-        "lastModified": 1794902163,
-        "narHash": "sha256-cD6ZkxNK0x+wGVL9OZPU+QohKfaBPvTr9AZnWUS8spQ=",
+        "lastModified": 1794916860,
+        "narHash": "sha256-dU0TiUNrWwRK8GiQEyfIGEyrAAOdircz6OS9O6fgzZ0=",
         "ref": "v0",
-        "rev": "f2c83b7399315afb477abba1e112bca107f0b345",
+        "rev": "6a962bfb805ce814cba756a7943f6f2d2cd1f67e",
         "shallow": true,
         "type": "git",
         "url": "https://github.com/flakeyard/lib-atom"
       },
       "original": {
         "ref": "v0",
-        "rev": "f2c83b7399315afb477abba1e112bca107f0b345",
+        "rev": "6a962bfb805ce814cba756a7943f6f2d2cd1f67e",
         "shallow": true,
         "type": "git",
         "url": "https://github.com/flakeyard/lib-atom"

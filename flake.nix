@@ -21,7 +21,7 @@
       inputs.git-hooks.follows = "git-hooks";
     };
     atom-markdown = {
-      url = "git+https://github.com/flakeyard/atom-markdown?ref=v0&rev=5fb65d9146d155f774961e5d1cf8d2154e79d375&shallow=1";
+      url = "git+https://github.com/flakeyard/atom-markdown?ref=v0&rev=0d3bca6f2fee47de01ecbe2ce1e49c0219870988&shallow=1";
       inputs.treefmt-nix.follows = "treefmt-nix";
       inputs.git-hooks.follows = "git-hooks";
     };
